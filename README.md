@@ -87,6 +87,23 @@ $ 1pass MyBankAccount username
 me@example.com
 ```
 
+**1pass** can be nicely combined with [fzf](https://github.com/junegunn/fzf) for fuzzy search and
+completion. Install ```fzf```, then paste this function into your shell:
+
+```sh
+fuzzpass() {
+    local arg=$1
+    if [ "$arg" == "" ]; then
+        arg="password"
+    fi
+    local item=$(1pass | fzf);
+    [[ ! -z "$item" ]] && 1pass $item
+}
+```
+
+the type ```fuzzpass```, select the Item, and press enter.
+
+
 ## Caching and Sessions
 
 When using **1pass**, all response data from 1Password is encrypted and then cached to
