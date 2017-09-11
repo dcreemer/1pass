@@ -16,6 +16,9 @@ native applications, requires and internet connection to fetch data from your pa
 
 ## Installation
 
+**WARNING** 1pass stores you 1Password master password in a local GPG-encrypted file. You should
+inspect the source code to ensure that you trust it.
+
 Copy the 1pass executable file to a suitable location on your PATH (for example, /usr/local/bin)
 and ensure that it is executable. For example:
 
