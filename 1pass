@@ -1,0 +1,224 @@
+#! /usr/bin/env bash
+#
+# 1pass -- a simple caching wrapper for the "op" 1Password CLI.
+#
+# Copyright (C) 2017 David Creemer, (twitter: @dcreemer)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+set -e
+
+op_bin=$HOME/bin/op
+op_dir=${HOME}/.1pass
+cache_dir=${op_dir}/cache
+
+# test setup:
+if [ ! -d $op_dir ] || [ ! -r ${op_dir}/config ]; then
+    mkdir -p $cache_dir
+    cat > ${op_dir}/config <<CONFIG
+# configuration file for 1pass
+
+# set to the ID of your GPG key
+self_key=
+
+# set to the email address associated with your 1Password account
+email=
+
+# set to your subdomain of 1password.com
+subdomain=
+CONFIG
+    echo "please config 1pass by editing ${op_dir}/config"
+    exit 1
+fi
+if [ ! -d $cache_dir ]; then
+    mkdir -p $cache_dir
+fi
+
+source ${op_dir}/config
+
+master=${op_dir}/_master.gpg
+secret=${op_dir}/_secret.gpg
+
+# check settings:
+
+if [ "$email" == "" ]; then
+    echo "please configure your 1Password email address in ${op_dir}/config"
+    exit 1
+fi
+
+if [ "$self_key" == "" ]; then
+    echo "please configure your GPG key in ${op_dir}/config"
+    exit 1
+fi
+
+if [ "$subdomain" == "" ]; then
+    echo "please configure your 1Password subdomain in ${op_dir}/config"
+    exit 1
+fi
+
+if [ ! -r ${master} ]; then
+    echo "please put your master password into ${master}"
+    echo "ex: echo \"master-password\" | gpg -er $email > ${master}"
+    exit 1
+fi
+
+if [ ! -r ${secret} ]; then
+    echo "please put your ${subdomain}.1password.com secret key into ${secret}"
+    echo "ex: echo \"A3-XXXXXX-XXXXXX-XXXXX-XXXXX-XXXXX-XXXXX\" | gpg -er $email > ${secret}"
+    exit 1
+fi
+
+
+index=${cache_dir}/_index.gpg
+session=${cache_dir}/_session.gpg
+token=""
+OPTIND=1
+refresh=0
+verbose=0
+
+usage()
+{
+cat <<USAGE
+usage: 1pass [-r] [-v] [<Item> [<username|password>]]
+USAGE
+}
+
+signin()
+{
+    local pw=$(gpg -d -q $master)
+    local se=$(gpg -d -q $secret)
+    if [ $verbose -eq 1 ]; then
+        echo "signing in ${subdomain}.1password.com $email"
+    fi
+    local token=$(echo $pw | op signin --output=raw ${subdomain}.1password.com $email $se)
+    echo $token | gpg -qe --batch -r $self_key > $session
+    # also export it in case we use the op command in the shell:
+    export OP_SESSION_${subdomain}=$token
+}
+
+init_session()
+{
+    # test for stale session
+    if [ ! -r $session ] || [ ! $(find $session -mmin -29) ]; then
+        signin
+    else
+        if [ $verbose -eq 1 ]; then
+            echo "using existing session token"
+        fi
+    fi
+    token=$(gpg -d -q $session)
+    touch $session
+}
+#
+# fetch the index of all items from the net, and cache
+#
+fetch_index()
+{
+    init_session
+    if [ $verbose -eq 1 ]; then
+        echo "fetching index of all items"
+    fi
+    op list items --session=$token | gpg -qe --batch -r $self_key > $index
+}
+
+#
+# fetch an item from the net by uuid and cache it locally
+#
+fetch_item()
+{
+    local uuid=$1
+    init_session
+    if [ $verbose -eq 1 ]; then
+        echo "fetching item $uuid"
+    fi
+    op get item $uuid --session=$token | gpg -qe --batch -r $self_key > ${cache_dir}/${uuid}.gpg
+}
+
+#
+# list the titles of all items in the index
+#
+list_items()
+{
+    if [ ! -r $index ] || [ $refresh -eq 1 ]; then
+        fetch_index
+    fi
+    gpg -qd $index | jq -r ".[].overview.title" | sort -bf
+}
+
+#
+# fetch a field from template 001 ("Login")
+#
+get_001()
+{
+    local uuid=$1
+    local field=$2
+    local file=${cache_dir}/${uuid}.gpg
+    if [ ! -r $file ] || [ $refresh -eq 1 ]; then
+        fetch_item $uuid
+    fi
+    gpg -qd ${cache_dir}/${uuid}.gpg | jq -r ".details.fields[] | select(.designation==\"${field}\").value"
+}
+
+#
+# fetch a field from template 005 ("Password")
+#
+get_005()
+{
+    local uuid=$1
+    local field=$2
+    gpg -qd ${cache_dir}/${uuid}.gpg | jq -r ".details.${field}"
+}
+
+get_by_title()
+{
+    local title=$1
+    local field=$2
+    if [ $refresh -eq 1 ]; then
+        fetch_index
+    fi
+    local uuid=$(gpg -qd $index | jq -r ".[] | select(.overview.title==\"${title}\").uuid")
+    local tid=$(gpg -qd $index | jq -r ".[] | select(.overview.title==\"${title}\").templateUuid")
+    if [ "$tid" != "" ]; then
+        get_${tid} $uuid $field
+    fi
+}
+
+while getopts "h?r?v?:" opt; do
+  case $opt in
+    h)
+        usage
+        exit 0
+      ;;
+    r)
+        refresh=1
+      ;;
+    v)
+        verbose=1
+      ;;
+    \?)
+      echo "Invalid option: -$OPTARG" >&2
+      ;;
+  esac
+done
+
+shift $((OPTIND-1))
+
+if [ $# -eq 0 ]; then
+    list_items
+elif [ $# -eq 1 ]; then
+    get_by_title $1 password
+elif [ $# -eq 2 ]; then
+    get_by_title $1 $2
+fi
