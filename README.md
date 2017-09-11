@@ -26,11 +26,17 @@ chmod a+x /usr/local/bin/1pass
 
 ## Configuration
 
-In order to run with minimum user input, **1pass** relies on the Gnu Privacy Guard [gpg](https://gnupg.org/) to encrypt
-all locally stored data. 1Password needs both a *master password* and a *secret key* to access your
-vault. Each of these must be stored in an encrypted file (in the ~/.1pass) directory for 1pass to
-work correctly. 1pass encrypts these and all other files with your own gpg key. This key, as well as
-your 1Password login email and subdomain must be configured in the ~/.1pass/config file.
+In order to run with minimum user input, **1pass** relies on the Gnu Privacy Guard
+[gpg](https://gnupg.org/) to encrypt all locally stored data. 1Password needs both a *master
+password* and a *secret key* to access your vault. Each of these must be stored in an encrypted file
+(in the ~/.1pass) directory for 1pass to work correctly. 1pass encrypts these and all other files
+with your own gpg key. This key, as well as your 1Password login email and subdomain must be
+configured in the ~/.1pass/config file.
+
+GPG can be configured to use the ```gpg-agent```, which can prompt for your *gpg* password, and
+cache it in a local agent for a fixed amount of time. If you configure GPG this way, you will only
+need to enter you GPG password (e.g.) once a day, and then seldom need to enter your 1Password
+master password.
 
 Running ```1pass -rv``` repeatedly will output instructions on how to configure this file and safely
 store your master password and secret key.
