@@ -57,7 +57,7 @@ please put your mysubdomain.1password.com secret key into /home/me/.1pass/_secre
 ex: echo "A3-XXXXXX-XXXXXX-XXXXX-XXXXX-XXXXX-XXXXX" | gpg -er me@example.com > /home/me/.1pass/_secret.gpg
 $ echo "A3-XXXXXX-XXXXXX-XXXXX-XXXXX-XXXXX-XXXXX" | gpg -er me@example.com > /home/me/.1pass/_secret.gpg
 $ ./1pass -rv
-signing in mysubdomain.1password.com me@example.com
+signing in to mysubdomain.1password.com me@example.com
 ...
 ```
 
