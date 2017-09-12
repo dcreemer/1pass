@@ -112,6 +112,14 @@ fuzzpass() {
 
 the type ```fuzzpass```, select the Item, and press enter.
 
+## Emacs
+
+For the brave, a trivial Emacs wrapper library is included. E.g.
+
+```elisp
+(setq freenode-nick-username (1pass--item-login "Freenode/nick1"))
+(setq freenode-nick-password (1pass--item-password "Freenode/nick1"))
+```
 
 ## Caching and Sessions
 
