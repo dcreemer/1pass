@@ -133,6 +133,6 @@ manage the session for you, and refresh it as needed.
 
 ## License
 
-Copyright (c) 2017, David Creemer (twitter: @dcreemer)
+Copyright (c) 2017, David Creemer (twitter: [@dcreemer](https://twitter.com/dcreemer))
 
 GPLv3
