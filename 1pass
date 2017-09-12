@@ -39,6 +39,7 @@ email=
 # set to your subdomain of 1password.com
 subdomain=
 CONFIG
+    chmod go-rw ${op_dir}/config
     echo "please config 1pass by editing ${op_dir}/config"
     exit 1
 fi
