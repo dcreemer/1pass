@@ -6,8 +6,8 @@ CLI](https://support.1password.com/command-line-getting-started/) ```op```.
 ## Introduction
 
 The 1Password CLI can be somewhat difficult to use, and unlike the Mac OS X or Windows 1Password
-native applications, requires and internet connection to fetch data from your password vaults.
-**1pass** solves both of problems.
+native applications, requires an internet connection to fetch data from your password vaults.
+**1pass** solves both of these problems.
 
 **1pass** provides two main features:
 
