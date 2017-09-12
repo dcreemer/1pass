@@ -101,7 +101,7 @@ signin()
     local pw=$(gpg -d -q $master)
     local se=$(gpg -d -q $secret)
     if [ $verbose -eq 1 ]; then
-        echo "signing in ${subdomain}.1password.com $email"
+        echo "signing in to ${subdomain}.1password.com $email"
     fi
     local token=$(echo $pw | op signin --output=raw ${subdomain}.1password.com $email $se)
     echo $token | gpg -qe --batch -r $self_key > $session
