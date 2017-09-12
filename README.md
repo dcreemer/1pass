@@ -12,7 +12,7 @@ native applications, requires an internet connection to fetch data from your pas
 **1pass** provides two main features:
 
 - a simplified interface for listing and fetching usernames and passwords for individual items.
-- an encrypted local cache of 1Password 
+- an encrypted local cache of 1Password CLI results.
 
 ## Installation
 
