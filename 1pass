@@ -88,11 +88,28 @@ token=""
 OPTIND=1
 refresh=0
 verbose=0
+print_output=0
+clip_time=45
 
 usage()
 {
 cat <<USAGE
-usage: 1pass [-r] [-v] [<Item> [<username|password>]]
+usage: 1pass [-fhprv] [<Item> [<username|password>]]
+
+-f   Forget GPG key from gpg-agent, and remove local session
+-h   Help
+-p   Print the 1pass output to stdout, rather than copying to the clipboard
+-r   Refresh all appropriate data from 1password.com, ignoring local cache
+-v   Verbose output
+
+With no arguments, prints a list of all Logins and Passwords in all 1Password
+ vaults.
+
+With a single argument, fetches the Item (Login or Password) matching the given
+name, and copies the resulting password to the clipboard.
+
+With two arguments, fetches the specified field (e.g.) "usernmae" from the
+named item, and copies the results to the clipboard.
 USAGE
 }
 
@@ -122,6 +139,16 @@ init_session()
     token=$(gpg -d -q $session)
     touch $session
 }
+
+forget_session()
+{
+    unset OP_SESSION_${subdomain}
+    rm -f $session
+    if [ $(gpgconf --kill gpg-agent) ]; then
+        echo "cleared local session"
+    fi
+}
+
 #
 # fetch the index of all items from the net, and cache
 #
@@ -182,6 +209,28 @@ get_005()
     gpg -qd ${cache_dir}/${uuid}.gpg | jq -r ".details.${field}"
 }
 
+output_result()
+{
+    local result=$1
+    if [ $print_output -eq 1 ]; then
+        echo $result
+    else
+        local os=$(uname)
+        if [ "$os" == "Darwin" ]; then
+            echo -n $result | pbcopy
+        elif [ "$os" == "Linux" ]; then
+            echo -n $result | xclip -c
+        fi
+        # sleep and reset clipboard
+        local sleep_argv0="1pass sleep for user $(id -u)"
+        pkill -f "^$sleep_argv0" 2>/dev/null && sleep 0.5
+        (
+            ( exec -a "$sleep_argv0" sleep "$clip_time" )
+            echo -n "CLEAR" | pbcopy
+        ) 2>/dev/null & disown
+    fi
+}
+
 get_by_title()
 {
     local title=$1
@@ -192,26 +241,36 @@ get_by_title()
     local uuid=$(gpg -qd $index | jq -r ".[] | select(.overview.title==\"${title}\").uuid")
     local tid=$(gpg -qd $index | jq -r ".[] | select(.overview.title==\"${title}\").templateUuid")
     if [ "$tid" != "" ]; then
-        get_${tid} $uuid $field
+        local result=$(get_${tid} $uuid $field)
+        if [ $? -eq 0 ]; then
+            output_result $result
+        fi
     fi
 }
 
-while getopts "h?r?v?:" opt; do
-  case $opt in
-    h)
-        usage
-        exit 0
-      ;;
-    r)
-        refresh=1
-      ;;
-    v)
-        verbose=1
-      ;;
-    \?)
-      echo "Invalid option: -$OPTARG" >&2
-      ;;
-  esac
+while getopts "f?h?p?r?v?:" opt; do
+    case $opt in
+        h)
+            usage
+            exit 0
+            ;;
+        f)
+            forget_session
+            exit 0
+            ;;
+        p)
+            print_output==1
+            ;;
+        r)
+            refresh=1
+            ;;
+        v)
+            verbose=1
+            ;;
+        \?)
+            echo "Invalid option: -$OPTARG" >&2
+            ;;
+    esac
 done
 
 shift $((OPTIND-1))
