@@ -19,6 +19,7 @@
 #
 
 set -e
+set -o pipefail
 
 op_bin=$HOME/bin/op
 op_dir=${HOME}/.1pass
@@ -120,8 +121,12 @@ signin()
     if [ $verbose -eq 1 ]; then
         echo "signing in to ${subdomain}.1password.com $email"
     fi
-    local token=$(echo $pw | op signin --output=raw ${subdomain}.1password.com $email $se)
-    echo $token | gpg -qe --batch -r $self_key > $session
+    local token=$(echo -n $pw | op signin --output=raw ${subdomain}.1password.com $email $se || echo -n "_fail_")
+    if [ "$token" == "_fail_" ]; then
+        echo "1pass failed to signin to ${subdomain}.1password.com"
+        exit 1
+    fi
+    echo -n $token | gpg -qe --batch -r $self_key > $session
     # also export it in case we use the op command in the shell:
     export OP_SESSION_${subdomain}=$token
 }
@@ -129,7 +134,7 @@ signin()
 init_session()
 {
     # test for stale session
-    if [ ! -r $session ] || [ ! $(find $session -mmin -29) ]; then
+    if [ ! -r $session ] || [ ! $(find $session -mmin -29) ] || [ $refresh -eq 1 ]; then
         signin
     else
         if [ $verbose -eq 1 ]; then
@@ -158,7 +163,14 @@ fetch_index()
     if [ $verbose -eq 1 ]; then
         echo "fetching index of all items"
     fi
-    op list items --session=$token | gpg -qe --batch -r $self_key > $index
+    local items=$(op list items --session=$token || echo -n "_fail_")
+    if [ "$items" == "_fail_" ]; then
+        echo "1pass: failed to fetch index of all items"
+        exit 1
+    fi
+    # backup current index
+    cp -a $index ${index}.bak
+    echo -n $item | gpg -qe --batch -r $self_key > $index
 }
 
 #
@@ -171,7 +183,12 @@ fetch_item()
     if [ $verbose -eq 1 ]; then
         echo "fetching item $uuid"
     fi
-    op get item $uuid --session=$token | gpg -qe --batch -r $self_key > ${cache_dir}/${uuid}.gpg
+    local $item=$(op get item $uuid --session=$token || echo -n "_fail_")
+    if [ "$item" == "_fail_" ]; then
+        echo "1pass: failed to fetch item $uuid"
+        exit 1
+    fi
+    echo -n $item | gpg -qe --batch -r $self_key > ${cache_dir}/${uuid}.gpg
 }
 
 #
@@ -241,8 +258,8 @@ get_by_title()
     local uuid=$(gpg -qd $index | jq -r ".[] | select(.overview.title==\"${title}\").uuid")
     local tid=$(gpg -qd $index | jq -r ".[] | select(.overview.title==\"${title}\").templateUuid")
     if [ "$tid" != "" ]; then
-        local result=$(get_${tid} $uuid $field)
-        if [ $? -eq 0 ]; then
+        local result=$(get_${tid} $uuid $field || echo -n "_fail_")
+        if [ "$result" != "_fail_" ]; then
             output_result $result
         fi
     fi
