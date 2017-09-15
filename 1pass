@@ -86,11 +86,12 @@ fi
 index=${cache_dir}/_index.gpg
 session=${cache_dir}/_session.gpg
 token=""
+get_result=""
 OPTIND=1
 refresh=0
 verbose=0
 print_output=0
-clip_time=45
+clip_time=30
 
 usage()
 {
@@ -121,18 +122,22 @@ signin()
     if [ $verbose -eq 1 ]; then
         echo "signing in to ${subdomain}.1password.com $email"
     fi
-    local token=$(echo -n $pw | op signin --output=raw ${subdomain}.1password.com $email $se || echo -n "_fail_")
+    local token=$(echo -n "${pw}" | op signin --output=raw ${subdomain}.1password.com $email $se || echo -n "_fail_")
     if [ "$token" == "_fail_" ]; then
         echo "1pass failed to signin to ${subdomain}.1password.com"
         exit 1
     fi
-    echo -n $token | gpg -qe --batch -r $self_key > $session
+    echo -n "${token}" | gpg -qe --batch -r $self_key > $session
     # also export it in case we use the op command in the shell:
     export OP_SESSION_${subdomain}=$token
 }
 
 init_session()
 {
+    if [ "${token}" != "" ]; then
+        # already have token
+        return
+    fi
     # test for stale session
     if [ ! -r $session ] || [ ! $(find $session -mmin -29) ] || [ $refresh -eq 1 ]; then
         signin
@@ -149,9 +154,8 @@ forget_session()
 {
     unset OP_SESSION_${subdomain}
     rm -f $session
-    if [ $(gpgconf --kill gpg-agent) ]; then
-        echo "cleared local session"
-    fi
+    gpgconf --kill gpg-agent
+    echo "cleared local session"
 }
 
 #
@@ -163,14 +167,16 @@ fetch_index()
     if [ $verbose -eq 1 ]; then
         echo "fetching index of all items"
     fi
-    local items=$(op list items --session=$token || echo -n "_fail_")
+    local items=$(op list items --session=${token} || echo -n "_fail_")
     if [ "$items" == "_fail_" ]; then
         echo "1pass: failed to fetch index of all items"
         exit 1
     fi
     # backup current index
-    cp -a $index ${index}.bak
-    echo -n $item | gpg -qe --batch -r $self_key > $index
+    if [ -r $index ]; then
+        cp -a $index ${index}.bak
+    fi
+    echo -n "${items}" | gpg -qe --batch -r $self_key > $index
 }
 
 #
@@ -183,12 +189,12 @@ fetch_item()
     if [ $verbose -eq 1 ]; then
         echo "fetching item $uuid"
     fi
-    local $item=$(op get item $uuid --session=$token || echo -n "_fail_")
+    local item=$(op get item $uuid --session=$token || echo -n "_fail_")
     if [ "$item" == "_fail_" ]; then
         echo "1pass: failed to fetch item $uuid"
         exit 1
     fi
-    echo -n $item | gpg -qe --batch -r $self_key > ${cache_dir}/${uuid}.gpg
+    echo -n "${item}" | gpg -qe --batch -r $self_key > ${cache_dir}/${uuid}.gpg
 }
 
 #
@@ -203,17 +209,28 @@ list_items()
 }
 
 #
+# ensure we have the local gpg encoded file of the item given by the uuid
+#
+ensure_item()
+{
+    local uuid=$1
+    local file=${cache_dir}/${uuid}.gpg
+    if [ ! -r $file ] || [ $refresh -eq 1 ]; then
+        fetch_item $uuid
+    fi
+}
+
+#
 # fetch a field from template 001 ("Login")
 #
 get_001()
 {
     local uuid=$1
     local field=$2
-    local file=${cache_dir}/${uuid}.gpg
-    if [ ! -r $file ] || [ $refresh -eq 1 ]; then
-        fetch_item $uuid
-    fi
-    gpg -qd ${cache_dir}/${uuid}.gpg | jq -r ".details.fields[] | select(.designation==\"${field}\").value"
+    ensure_item $uuid
+    get_result=$(gpg -qd ${cache_dir}/${uuid}.gpg \
+                     | jq -r ".details.fields[] | select(.designation==\"${field}\").value" \
+                     || echo -n "_fail_")
 }
 
 #
@@ -223,20 +240,20 @@ get_005()
 {
     local uuid=$1
     local field=$2
-    gpg -qd ${cache_dir}/${uuid}.gpg | jq -r ".details.${field}"
+    ensure_item $uuid
+    get_result=$(gpg -qd ${cache_dir}/${uuid}.gpg | jq -r ".details.${field}" || echo -n "_fail_")
 }
 
 output_result()
 {
-    local result=$1
     if [ $print_output -eq 1 ]; then
-        echo $result
+        echo "${get_result}"
     else
         local os=$(uname)
         if [ "$os" == "Darwin" ]; then
-            echo -n $result | pbcopy
+            echo -n "${get_result}" | pbcopy
         elif [ "$os" == "Linux" ]; then
-            echo -n $result | xclip -c
+            echo -n "${get_result}" | xclip -c
         fi
         # sleep and reset clipboard
         local sleep_argv0="1pass sleep for user $(id -u)"
@@ -252,15 +269,15 @@ get_by_title()
 {
     local title=$1
     local field=$2
-    if [ $refresh -eq 1 ]; then
+    if [ ! -r $index ] || [ $refresh -eq 1 ]; then
         fetch_index
     fi
     local uuid=$(gpg -qd $index | jq -r ".[] | select(.overview.title==\"${title}\").uuid")
     local tid=$(gpg -qd $index | jq -r ".[] | select(.overview.title==\"${title}\").templateUuid")
     if [ "$tid" != "" ]; then
-        local result=$(get_${tid} $uuid $field || echo -n "_fail_")
-        if [ "$result" != "_fail_" ]; then
-            output_result $result
+        get_${tid} $uuid $field
+        if [ $? ]; then
+            output_result
         fi
     fi
 }
@@ -276,7 +293,7 @@ while getopts "f?h?p?r?v?:" opt; do
             exit 0
             ;;
         p)
-            print_output==1
+            print_output=1
             ;;
         r)
             refresh=1
