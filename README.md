@@ -153,7 +153,7 @@ fuzzpass() {
         arg="password"
     fi
     local item=$(1pass | fzf);
-    [[ ! -z "$item" ]] && 1pass $item
+    [[ ! -z "$item" ]] && 1pass $item $arg
 }
 ```
 
