@@ -118,22 +118,28 @@ gmail.com
 The list consists of the *titles* of each item. You can then retrieve the password of an item:
 
 ```sh
-$ 1pass Github
+$ 1pass -p Github
 sjd$kh23@0dfjs1DDj
 ```
 
-The password is echoed to the standard output, ready for copy / pasting. You can easily use this in
-scripts, for example:
+The password is echoed to the standard output (when the '-p' option is used). You can easily use
+this in scripts, for example:
 
 ```sh
-export PGPASSWORD=$(1pass MyPostgresServer)
+export PGPASSWORD=$(1pass -p MyPostgresServer)
 ```
 
-You can also pass **1pass** an optional field argument -- for example "username" to retrieve that
-field from the item:
+Without the '-p' option, 1pass copies the password to the clipboard:
 
 ```sh
-$ 1pass MyBankAccount username
+$ 1pass Github
+```
+
+The contents of the clipboard will be automatically cleared after 30 seconds. You can also pass
+**1pass** an optional field argument -- for example "username" to retrieve that field from the item:
+
+```sh
+$ 1pass -p MyBankAccount username
 me@example.com
 ```
 

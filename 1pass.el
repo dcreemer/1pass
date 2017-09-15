@@ -31,7 +31,7 @@
   (with-temp-buffer
     (let* ((exit-code
             (apply 'call-process
-                    (list 1pass-cli-executable nil t nil item field))))
+                    (list 1pass-cli-executable nil t nil "-p" item field))))
       (if (zerop exit-code)
           (s-chomp (buffer-string))
         (error (s-chomp (buffer-string)))))))
