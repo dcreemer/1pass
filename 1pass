@@ -205,7 +205,7 @@ list_items()
     if [ ! -r $index ] || [ $refresh -eq 1 ]; then
         fetch_index
     fi
-    gpg -qd $index | jq -r ".[].overview.title" | sort -bf
+    gpg -qd $index | jq -r ".[].overview.title" | LC_ALL="C" bash -c 'sort -bf'
 }
 
 #
