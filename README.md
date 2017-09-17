@@ -27,6 +27,9 @@ JSON output is easy for a program to use, but is not trivially consumed by human
 
 Together these features enable easy use of 1Password-stored credentials.
 
+[![asciicast](https://asciinema.org/a/eiE9JmHW0um7Ee0FVj488GYo6.png)](https://asciinema.org/a/eiE9JmHW0um7Ee0FVj488GYo6)
+
+
 ## Installation
 
 Copy the 1pass executable file to a suitable location on your PATH (for example, /usr/local/bin)
