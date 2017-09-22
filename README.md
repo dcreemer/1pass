@@ -22,7 +22,8 @@ be revalidated manually after 30 minutes of inactivity and produces rich output 
 JSON output is easy for a program to use, but is not trivially consumed by humans without help.
 **1pass** provides that help, with two main features:
 
-- a simplified interface for listing and fetching usernames and passwords for individual items.
+- a simplified interface for listing and fetching usernames, passwords, and other fields for
+  individual items.
 - an encrypted local cache of 1Password CLI results.
 
 Together these features enable easy use of 1Password-stored credentials.
@@ -146,6 +147,14 @@ $ 1pass -p MyBankAccount username
 me@example.com
 ```
 
+**1pass** can lookup other fields besides username or password. They field name is the "label" for
+the field in the 1Password GUI.
+
+```sh
+$ 1pass -p MyBankAccount pin
+1234
+```
+
 **1pass** can be nicely combined with [fzf](https://github.com/junegunn/fzf) for fuzzy search and
 completion. Install ```fzf```, then paste this function into your shell:
 
@@ -167,8 +176,9 @@ the type ```fuzzpass```, select the Item, and press enter.
 For the brave, a trivial Emacs wrapper library is included. E.g.
 
 ```elisp
-(setq freenode-nick-username (1pass--item-login "Freenode/nick1"))
+(setq freenode-nick-username (1pass--item-username "Freenode/nick1"))
 (setq freenode-nick-password (1pass--item-password "Freenode/nick1"))
+(setq freenode-nick-password (1pass--item-field "Freenode" "server"))
 ```
 
 ## Caching and Sessions
