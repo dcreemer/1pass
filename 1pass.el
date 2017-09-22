@@ -36,17 +36,17 @@
           (s-chomp (buffer-string))
         (error (s-chomp (buffer-string)))))))
 
+(defun 1pass--item-field (item field)
+  "Lookup ITEM in 1pass and return the data from the given FIELD, if any."
+  (1pass--cli-run item field))
+
 (defun 1pass--item-password (item)
   "Lookup ITEM in 1pass and return the password, if any."
-  (let ((x (1pass--cli-run item "password")))
-    (message "%s" x)
-    x))
+  (1pass--cli-run item "password"))
 
-(defun 1pass--item-login (item)
+(defun 1pass--item-username (item)
   "Lookup ITEM in 1pass and return the username, if any."
-  (let ((x (1pass--cli-run item "username")))
-    (message "%s" x)
-    x))
+  (1pass--cli-run item "username"))
 
 (provide '1pass)
 
