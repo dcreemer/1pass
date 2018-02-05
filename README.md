@@ -1,7 +1,7 @@
 # 1pass
 
 **1pass** is a caching wrapper for the [1Password
-CLI](https://support.1password.com/command-line-getting-started/) ```op```.
+CLI](https://support.1password.com/command-line-getting-started/) `op`.
 
 ## Introduction
 
@@ -32,6 +32,13 @@ Together these features enable easy use of 1Password-stored credentials.
 
 
 ## Installation
+
+First make sure that the `op` [1Password
+CLI](https://support.1password.com/command-line-getting-started/) is installed. If you find it acceptable and useful, I have created at homebrew tap for `brew` on Mac OS X:
+
+```sh
+$ brew install dcreemer/misc/op
+```
 
 Copy the 1pass executable file to a suitable location on your PATH (for example, /usr/local/bin)
 and ensure that it is executable. For example:
