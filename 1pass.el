@@ -22,6 +22,8 @@
 
 
 ;;; Code:
+(require 's)
+
 (defvar 1pass-cli-executable
   (executable-find "1pass")
   "1pass executable.")
