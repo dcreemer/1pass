@@ -17,16 +17,17 @@
 ;;
 
 ;;; Commentary:
-
-;;; likely buggy
-
+;;
+;; Thin wrapper around the 1pass CLI utility.  It is likely that bugs will be
+;; found, so please report any findings as issues or pull requests here:
+;; https://github.com/dcreemer/1pass
 
 ;;; Code:
 (require 's)
 
 (defvar 1pass-cli-executable
   (executable-find "1pass")
-  "1pass executable.")
+  "Path to the 1pass executable.")
 
 (defun 1pass--cli-run (item field)
   "Call 1pass with given ITEM and FIELD."
