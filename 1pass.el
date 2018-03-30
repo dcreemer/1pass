@@ -29,25 +29,27 @@
   (executable-find "1pass")
   "Path to the 1pass executable.")
 
+;; private helpers
 (defun 1pass--cli-run (item field)
   "Call 1pass with given ITEM and FIELD."
   (with-temp-buffer
     (let* ((exit-code
-            (apply 'call-process
-                    (list 1pass-cli-executable nil t nil "-p" item field))))
+            (apply #'call-process
+                   (list 1pass-cli-executable nil t nil "-p" item field))))
       (if (zerop exit-code)
           (s-chomp (buffer-string))
         (error (s-chomp (buffer-string)))))))
 
-(defun 1pass--item-field (item field)
+;; public API
+(defun 1pass-field-for (item field)
   "Lookup ITEM in 1pass and return the data from the given FIELD, if any."
   (1pass--cli-run item field))
 
-(defun 1pass--item-password (item)
+(defun 1pass-password-for (item)
   "Lookup ITEM in 1pass and return the password, if any."
   (1pass--cli-run item "password"))
 
-(defun 1pass--item-username (item)
+(defun 1pass-username-for (item)
   "Lookup ITEM in 1pass and return the username, if any."
   (1pass--cli-run item "username"))
 
