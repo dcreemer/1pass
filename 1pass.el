@@ -53,6 +53,11 @@
   "Lookup ITEM in 1pass and return the username, if any."
   (1pass--cli-run item "username"))
 
+;; deprecated API:
+(define-obsolete-function-alias '1pass--item-field    '1pass-field-for)
+(define-obsolete-function-alias '1pass--item-password '1pass-password-for)
+(define-obsolete-function-alias '1pass--item-username '1pass-username-for)
+
 (provide '1pass)
 
 ;;; 1pass.el ends here
