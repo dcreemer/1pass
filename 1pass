@@ -316,7 +316,7 @@ shift $((OPTIND-1))
 if [ $# -eq 0 ]; then
     list_items
 elif [ $# -eq 1 ]; then
-    get_by_title $1 password
+    get_by_title "$1" password
 elif [ $# -eq 2 ]; then
-    get_by_title $1 $2
+    get_by_title "$1" $2
 fi
