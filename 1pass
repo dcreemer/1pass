@@ -92,6 +92,7 @@ refresh=0
 verbose=0
 print_output=0
 clip_time=30
+OP_SESSION_NAME=${subdomain//-/_}
 
 usage()
 {
@@ -129,7 +130,7 @@ signin()
     fi
     echo -n "${token}" | gpg -qe --batch -r $self_key > $session
     # also export it in case we use the op command in the shell:
-    export OP_SESSION_${subdomain}=$token
+    export $OP_SESSION_NAME=$token
 }
 
 init_session()
@@ -152,7 +153,7 @@ init_session()
 
 forget_session()
 {
-    unset OP_SESSION_${subdomain}
+    unset $OP_SESSION_NAME
     rm -f $session
     gpgconf --kill gpg-agent
     echo "cleared local session"
