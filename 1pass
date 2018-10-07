@@ -258,7 +258,7 @@ output_result()
         if [ "$os" == "Darwin" ]; then
             echo -n "${get_result}" | pbcopy
         elif [ "$os" == "Linux" ]; then
-            echo -n "${get_result}" | xclip -i
+            echo -n "${get_result}" | xclip -selection clipboard
         fi
         # sleep and reset clipboard
         local sleep_argv0="1pass sleep for user $(id -u)"
