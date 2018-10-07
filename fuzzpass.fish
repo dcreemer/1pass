@@ -5,5 +5,5 @@ function fuzzpass
   end 
   set item (1pass | fzf)
 
-  [ ! -z $item ] & 1pass $item $arg
+  [ -n $item ] & 1pass $item $arg
 end
