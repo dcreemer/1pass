@@ -257,7 +257,7 @@ output_result()
         local os=$(uname)
         if [ "$os" == "Darwin" ]; then
             echo -n "${get_result}" | pbcopy
-        elif [ "$os" == "Linux" ]; then
+        elif [ "$os" == "Linux" ] || [ "$os" == "FreeBSD" ]; then
             echo -n "${get_result}" | xclip -selection clipboard
         fi
         # sleep and reset clipboard
