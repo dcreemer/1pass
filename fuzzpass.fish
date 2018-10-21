@@ -1,5 +1,5 @@
 function fuzzpass
-  set arg $1
+  set arg $argv[1]
   if test -z "$arg"
     set arg "password"
   end 
