@@ -164,20 +164,8 @@ $ 1pass -p MyBankAccount pin
 ```
 
 **1pass** can be nicely combined with [fzf](https://github.com/junegunn/fzf) for fuzzy search and
-completion. Install ```fzf```, then paste this function into your shell:
-
-```sh
-fuzzpass() {
-    local arg=$1
-    if [ "$arg" == "" ]; then
-        arg="password"
-    fi
-    local item=$(1pass | fzf);
-    [[ ! -z "$item" ]] && 1pass $item $arg
-}
-```
-
-the type ```fuzzpass```, select the Item, and press enter.
+completion. See [fuzzpass.sh](blob/master/fuzzpass.sh) or
+[fuzzpass.fish](blob/master/fuzzpass.fish) for sample integration functions.
 
 ## Emacs
 
