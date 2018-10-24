@@ -164,8 +164,8 @@ $ 1pass -p MyBankAccount pin
 ```
 
 **1pass** can be nicely combined with [fzf](https://github.com/junegunn/fzf) for fuzzy search and
-completion. See [fuzzpass.sh](blob/master/fuzzpass.sh) or
-[fuzzpass.fish](blob/master/fuzzpass.fish) for sample integration functions.
+completion. See [fuzzpass.sh](fuzzpass.sh) or
+[fuzzpass.fish](fuzzpass.fish) for sample integration functions.
 
 ## Emacs
 
