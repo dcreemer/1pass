@@ -249,6 +249,33 @@ get_005()
     get_result=$(gpg -qd ${cache_dir}/${uuid}.gpg | jq -r ".details.${field}" || echo -n "_fail_")
 }
 
+#
+# fetch a TOTP value for the given item
+#
+get_totp()
+{
+    # Make sure we have a current and valid session and then get the UUID
+    init_session
+    if [ ! -r $index ] || [ $refresh -eq 1 ]; then
+        fetch_index
+    fi
+    local uuid=$(gpg -qd $index | jq -r ".[] | select(.overview.title==\"${1}\").uuid")
+
+    # Fetch the TOTP
+    if [ $verbose -eq 1 ]; then
+        echo "fetching TOTP for $uuid"
+    fi
+    local totp=$(op get totp $uuid --session=$token || echo -n "_fail_")
+    if [ "$item" == "_fail_" ]; then
+        echo "1pass: failed to fetch TOTP for $uuid"
+        exit 1
+    fi
+    if [ $? ]; then
+        get_result="${totp}"
+        output_result
+    fi
+}
+
 output_result()
 {
     if [ $print_output -eq 1 ]; then
@@ -319,5 +346,8 @@ if [ $# -eq 0 ]; then
 elif [ $# -eq 1 ]; then
     get_by_title "$1" password
 elif [ $# -eq 2 ]; then
-    get_by_title "$1" $2
+    case "$2" in
+        totp ) get_totp "$1"        ;;
+        *    ) get_by_title "$1" $2 ;;
+    esac
 fi
