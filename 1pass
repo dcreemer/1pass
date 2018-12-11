@@ -97,22 +97,21 @@ OP_SESSION_NAME=${subdomain//-/_}
 usage()
 {
 cat <<USAGE
-usage: 1pass [-fhprv] [<Item> [<username|password>]]
+usage: 1pass [-fhprv] [<Item> [<username|password|totp>]]
 
--f   Forget GPG key from gpg-agent, and remove local session
--h   Help
--p   Print the 1pass output to stdout, rather than copying to the clipboard
--r   Refresh all appropriate data from 1password.com, ignoring local cache
--v   Verbose output
+  -f   Forget GPG key from gpg-agent, and remove local session
+  -h   Help
+  -p   Print the 1pass output to stdout, rather than copying to the clipboard
+  -r   Refresh all appropriate data from 1password.com, ignoring local cache
+  -v   Verbose output
 
-With no arguments, prints a list of all Logins and Passwords in all 1Password
- vaults.
+With no arguments, prints a list of all Logins and Passwords in all 1Password vaults.
 
-With a single argument, fetches the Item (Login or Password) matching the given
-name, and copies the resulting password to the clipboard.
+With a single argument, fetches the Item (Login, Password, or TOTP) matching the
+given name, and copies the resulting password to the clipboard.
 
-With two arguments, fetches the specified field (e.g.) "usernmae" from the
-named item, and copies the results to the clipboard.
+With two arguments, fetches the specified field (e.g.) "usernmae" from the named
+item, and copies the results to the clipboard.
 USAGE
 }
 

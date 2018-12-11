@@ -163,6 +163,14 @@ $ 1pass -p MyBankAccount pin
 1234
 ```
 
+**1pass** has special support for TOTP fields -- these are fetched directly via `op`
+rather than a local cache. (Thanks to (@ev0rtex)[https://github.com/ev0rtex]).
+
+```sh
+$ 1pass -p MyBankAccount totp
+9865432
+```
+
 **1pass** can be nicely combined with [fzf](https://github.com/junegunn/fzf) for fuzzy search and
 completion. See [fuzzpass.sh](fuzzpass.sh) or
 [fuzzpass.fish](fuzzpass.fish) for sample integration functions.
@@ -198,4 +206,3 @@ components from other GPL 2+ software.
 
 Some ideas, and a tiny bit of code are taken from [pass](https://www.passwordstore.org) by Jason
 A. Donenfeld. 
-
