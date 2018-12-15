@@ -21,11 +21,17 @@
 set -e
 set -o pipefail
 
-VERSION="1.0.0"
+VERSION="1.0.1"
 
 op_bin=$HOME/bin/op
 op_dir=${HOME}/.1pass
 cache_dir=${op_dir}/cache
+
+# check for bare -V/version request first:
+if [ $# -eq 1 ] && [ "$1" == "-V" ]; then
+    echo "${VERSION}"
+    exit 0
+fi
 
 # test setup:
 if [ ! -d $op_dir ] || [ ! -r ${op_dir}/config ]; then
@@ -106,6 +112,7 @@ usage: 1pass [-fhprv] [<Item> [<username|password|totp>]]
   -p   Print the 1pass output to stdout, rather than copying to the clipboard
   -r   Refresh all appropriate data from 1password.com, ignoring local cache
   -v   Verbose output
+  -V   Print 1pass version and exit
 
 With no arguments, prints a list of all Logins and Passwords in all 1Password vaults.
 
@@ -315,7 +322,7 @@ get_by_title()
     fi
 }
 
-while getopts "f?h?p?r?v?V?:" opt; do
+while getopts "f?h?p?r?v?:" opt; do
     case $opt in
         h)
             usage
@@ -333,10 +340,6 @@ while getopts "f?h?p?r?v?V?:" opt; do
             ;;
         v)
             verbose=1
-            ;;
-        V)
-            echo "1pass version ${VERSION}"
-            exit 0
             ;;
         \?)
             echo "Invalid option: -$OPTARG" >&2
