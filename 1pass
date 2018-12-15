@@ -21,6 +21,8 @@
 set -e
 set -o pipefail
 
+VERSION="1.0.0"
+
 op_bin=$HOME/bin/op
 op_dir=${HOME}/.1pass
 cache_dir=${op_dir}/cache
@@ -313,7 +315,7 @@ get_by_title()
     fi
 }
 
-while getopts "f?h?p?r?v?:" opt; do
+while getopts "f?h?p?r?v?V?:" opt; do
     case $opt in
         h)
             usage
@@ -331,6 +333,10 @@ while getopts "f?h?p?r?v?:" opt; do
             ;;
         v)
             verbose=1
+            ;;
+        V)
+            echo "1pass version ${VERSION}"
+            exit 0
             ;;
         \?)
             echo "Invalid option: -$OPTARG" >&2
