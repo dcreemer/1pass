@@ -253,8 +253,14 @@ get_005()
 {
     local uuid=$1
     local field=$2
+    local q=""
+    if [ $field == "password" ]; then
+        q=".details.${field}"
+    else
+        q=".details.sections[] | select(.fields).fields[] | select(.t==\"${field}\").v"
+    fi
     ensure_item $uuid
-    get_result=$(gpg -qd ${cache_dir}/${uuid}.gpg | jq -r ".details.${field}" || echo -n "_fail_")
+    get_result=$(gpg -qd ${cache_dir}/${uuid}.gpg | jq -r "${q}" || echo -n "_fail_")
 }
 
 #
