@@ -85,8 +85,8 @@ any running gpg-agent of your GPG secret keys.
 In order to run with minimum user input, **1pass** relies on the Gnu Privacy Guard
 [gpg](https://gnupg.org/) to encrypt all locally stored data. 1Password needs both a *master
 password* and a *secret key* to access your vault. Each of these must be stored in an encrypted file
-(in the ~/.1pass) directory for 1pass to work correctly. 1pass encrypts these and all other files
-with your own gpg key. This key, as well as your 1Password login email and subdomain must be
+(in ~/.1pass or `$XDG_CONFIG_HOME/1pass`) for 1pass to work correctly. 1pass encrypts these and all other files
+with your own gpg key. This key, as well as your 1Password login email and domain must be
 configured in the ~/.1pass/config file.
 
 GPG can be configured to use the ```gpg-agent```, which can prompt for your *gpg* password, and
