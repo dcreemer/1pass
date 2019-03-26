@@ -6,5 +6,5 @@ self_key=<key-id>
 # set to the email address associated with your 1Password account
 email=<email address>
 
-# set to your subdomain of 1password.com
-subdomain=<subdomain>
+# set to your 1password domain
+domain=<domain>

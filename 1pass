@@ -53,8 +53,8 @@ self_key=
 # set to the email address associated with your 1Password account
 email=
 
-# set to your subdomain of 1password.com
-subdomain=
+# set to your 1password domain
+domain=
 CONFIG
     chmod go-rw ${op_dir}/config
     echo "please config 1pass by editing ${op_dir}/config"
@@ -81,10 +81,11 @@ if [ "$self_key" == "" ]; then
     exit 1
 fi
 
-if [ "$subdomain" == "" ]; then
-    echo "please configure your 1Password subdomain in ${op_dir}/config"
+if [ "$subdomain" == "" ] && [ "$domain" == "" ]; then
+    echo "please configure your 1Password domain in ${op_dir}/config"
     exit 1
 fi
+domain=${domain:-${subdomain}.1password.com}
 
 if [ ! -r ${master} ]; then
     echo "please put your master password into ${master}"
@@ -93,11 +94,10 @@ if [ ! -r ${master} ]; then
 fi
 
 if [ ! -r ${secret} ]; then
-    echo "please put your ${subdomain}.1password.com secret key into ${secret}"
+    echo "please put your ${domain} secret key into ${secret}"
     echo "ex: echo \"A3-XXXXXX-XXXXXX-XXXXX-XXXXX-XXXXX-XXXXX\" | gpg -er $email > ${secret}"
     exit 1
 fi
-
 
 index=${cache_dir}/_index.gpg
 session=${cache_dir}/_session.gpg
@@ -108,7 +108,7 @@ refresh=0
 verbose=0
 print_output=0
 clip_time=30
-OP_SESSION_NAME=${subdomain//-/_}
+OP_SESSION_NAME=$(echo "$domain" | cut -f1 -d'.' | tr '-' '_')
 
 usage()
 {
@@ -137,11 +137,11 @@ signin()
     local pw=$(gpg -d -q $master)
     local se=$(gpg -d -q $secret)
     if [ $verbose -eq 1 ]; then
-        echo "signing in to ${subdomain}.1password.com $email"
+        echo "signing in to ${domain} $email"
     fi
-    local token=$(echo -n "${pw}" | op signin --output=raw ${subdomain}.1password.com $email $se || echo -n "_fail_")
+    local token=$(echo -n "${pw}" | op signin --output=raw ${domain} $email $se || echo -n "_fail_")
     if [ "$token" == "_fail_" ]; then
-        echo "1pass failed to signin to ${subdomain}.1password.com"
+        echo "1pass failed to signin to ${domain}"
         exit 1
     fi
     echo -n "${token}" | gpg -qe --batch -r $self_key > $session
