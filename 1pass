@@ -23,9 +23,17 @@ set -o pipefail
 
 VERSION="1.0.1"
 
-op_bin=$HOME/bin/op
-op_dir=${HOME}/.1pass
-cache_dir=${op_dir}/cache
+if [ "$XDG_CONFIG_HOME" != "" ] && [ ! -d "${HOME}/.1pass" ]; then
+    op_dir="${XDG_CONFIG_HOME}/1pass"
+else
+    op_dir=${HOME}/.1pass
+fi
+
+if [ "$XDG_CACHE_HOME" != "" ] && [ ! -d "${op_dir}/cache" ]; then
+    cache_dir="${XDG_CACHE_HOME}/1pass"
+else
+    cache_dir=${op_dir}/cache
+fi
 
 # check for bare -V/version request first:
 if [ $# -eq 1 ] && [ "$1" == "-V" ]; then
