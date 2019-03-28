@@ -87,7 +87,9 @@ In order to run with minimum user input, **1pass** relies on the Gnu Privacy Gua
 password* and a *secret key* to access your vault. Each of these must be stored in an encrypted file
 (in ~/.1pass or `$XDG_CONFIG_HOME/1pass`) for 1pass to work correctly. 1pass encrypts these and all other files
 with your own gpg key. This key, as well as your 1Password login email and domain must be
-configured in the ~/.1pass/config file.
+configured in the ~/.1pass/config file. The domain is the full domain name that
+you use to sign-in when you use the 1Password website, for example
+`example.1password.com` or `subdomain.1password.ca`.
 
 GPG can be configured to use the ```gpg-agent```, which can prompt for your *gpg* password, and
 cache it in a local agent for a fixed amount of time. If you configure GPG this way, you will only

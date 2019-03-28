@@ -53,7 +53,7 @@ self_key=
 # set to the email address associated with your 1Password account
 email=
 
-# set to your 1password domain
+# set to your 1password domain (e.g. example.1password.com)
 domain=
 CONFIG
     chmod go-rw ${op_dir}/config
@@ -82,7 +82,7 @@ if [ "$self_key" == "" ]; then
 fi
 
 if [ "$subdomain" == "" ] && [ "$domain" == "" ]; then
-    echo "please configure your 1Password domain in ${op_dir}/config"
+    echo "please configure your 1Password domain in ${op_dir}/config, e.g. example.1password.com"
     exit 1
 fi
 domain=${domain:-${subdomain}.1password.com}
