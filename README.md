@@ -34,11 +34,14 @@ Together these features enable easy use of 1Password-stored credentials.
 ## Installation
 
 First make sure that the `op` [1Password
-CLI](https://support.1password.com/command-line-getting-started/) and the `jq` [JQ](https://stedolan.github.io/jq) are installed. If you use homebrew cask on Mac OS X, this works well:
+CLI](https://support.1password.com/command-line-getting-started/) and the `jq`
+[JQ](https://stedolan.github.io/jq) and
+[expect](https://core.tcl.tk/expect/index) requirements are installed. If you use
+homebrew cask on Mac OS X, this works well:
 
 ```sh
 $ brew cask install 1password-cli
-$ brew install jq
+$ brew install jq expect
 ```
 
 Copy the 1pass executable file to a suitable location on your PATH (for example, /usr/local/bin)
