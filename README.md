@@ -170,6 +170,8 @@ $ 1pass -p MyBankAccount pin
 
 **1pass** has special support for TOTP fields -- these are fetched directly via `op`
 rather than a local cache. (Thanks to (@ev0rtex)[https://github.com/ev0rtex]).
+Note that this **is different** from using TOTP 2FA to log into your 1Password
+account (that is supported too -- see below)
 
 ```sh
 $ 1pass -p MyBankAccount totp
@@ -199,6 +201,14 @@ from the online 1Password vault.
 
 Similarly, 1Password CLI sessions last for 30 minutes from the time of last use. **1pass** will
 manage the session for you, and refresh it as needed.
+
+## 2FA for 1Password
+
+If you have turned on two-factor authentication (2FA) support for your 1Password
+account, then 1pass will prompt for you to enter a TOTP code when creating a
+session. Currently, you will need to re-enter this code after every session
+expiration (30 minutes of inactivity). Unfortunately this makes using 1pass in
+non-interactive scripts less useful.
 
 ## License
 
