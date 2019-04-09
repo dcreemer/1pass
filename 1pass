@@ -132,6 +132,20 @@ item, and copies the results to the clipboard.
 USAGE
 }
 
+sanity_check()
+{
+    for cmd in "op" "jq" "gpg" "expect"
+    do
+        if [ $verbose -eq 1 ]; then
+            echo "checking for $cmd"
+        fi
+        if [ ! -x "`which $cmd`" ]; then
+            echo "Cannot find the '$cmd' command. Please make sure it is installed"
+            exit 1
+        fi
+    done
+}
+
 signin()
 {
     local pw=$(gpg -d -q $master)
@@ -378,6 +392,8 @@ while getopts "f?h?p?r?v?:" opt; do
 done
 
 shift $((OPTIND-1))
+
+sanity_check
 
 if [ $# -eq 0 ]; then
     list_items
