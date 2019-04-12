@@ -3,6 +3,12 @@
 **1pass** is a caching wrapper for the [1Password
 CLI](https://support.1password.com/command-line-getting-started/) `op`.
 
+## UPGRADE NOTE
+
+Upgrading to version 1.1 requires installation of the
+[expect](https://core.tcl.tk/expect/index) tool. `1pass` will check for this (and
+other) dependencies and remind you to install them.
+
 ## Introduction
 
 **1pass** is designed to make using your 1Password usernames and passwords quick and easy. It is
