@@ -21,7 +21,7 @@
 set -e
 set -o pipefail
 
-VERSION="1.0.1"
+VERSION="1.1"
 
 if [ "$XDG_CONFIG_HOME" != "" ] && [ ! -d "${HOME}/.1pass" ]; then
     op_dir="${XDG_CONFIG_HOME}/1pass"
@@ -127,9 +127,23 @@ With no arguments, prints a list of all Logins and Passwords in all 1Password va
 With a single argument, fetches the Item (Login, Password, or TOTP) matching the
 given name, and copies the resulting password to the clipboard.
 
-With two arguments, fetches the specified field (e.g.) "usernmae" from the named
+With two arguments, fetches the specified field (e.g.) "username" from the named
 item, and copies the results to the clipboard.
 USAGE
+}
+
+sanity_check()
+{
+    for cmd in "op" "jq" "gpg" "expect"
+    do
+        if [ $verbose -eq 1 ]; then
+            echo "checking for $cmd"
+        fi
+        if [ ! -x "`which $cmd`" ]; then
+            echo "Cannot find the '$cmd' command. Please make sure it is installed"
+            exit 1
+        fi
+    done
 }
 
 signin()
@@ -139,14 +153,30 @@ signin()
     if [ $verbose -eq 1 ]; then
         echo "signing in to ${domain} $email"
     fi
-    local token=$(echo -n "${pw}" | op signin --output=raw ${domain} $email $se || echo -n "_fail_")
-    if [ "$token" == "_fail_" ]; then
+    local script="
+        spawn op signin ${domain} ${email} ${se}
+        expect \"${domain}:\"
+        send \"${pw}\n\"
+        expect {
+               \"Enter your six-digit authentication code:\" {
+                       puts -nonewline stderr \"Enter your six-digit authentication code: \"
+                       flush stderr
+                       interact -o \"\r\" return
+                       puts stderr \"\"
+                       exp_continue
+               }
+               eof
+        }
+    "
+    local output0=$(expect -c "${script}")
+    local output=$(echo "${output0}" | grep "export" || echo -n "_fail_")
+    if [ "$output" == "_fail_" ]; then
         echo "1pass failed to signin to ${domain}"
         exit 1
     fi
+    # extract token from 'export OP_SESSION_domain="asdsad"'
+    local token=$(expr "${output}" : '.*="\(.*\)"')
     echo -n "${token}" | gpg -qe --batch -r $self_key > $session
-    # also export it in case we use the op command in the shell:
-    export $OP_SESSION_NAME=$token
 }
 
 init_session()
@@ -362,6 +392,8 @@ while getopts "f?h?p?r?v?:" opt; do
 done
 
 shift $((OPTIND-1))
+
+sanity_check
 
 if [ $# -eq 0 ]; then
     list_items

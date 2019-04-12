@@ -3,6 +3,12 @@
 **1pass** is a caching wrapper for the [1Password
 CLI](https://support.1password.com/command-line-getting-started/) `op`.
 
+## UPGRADE NOTE
+
+Upgrading to version 1.1 requires installation of the
+[expect](https://core.tcl.tk/expect/index) tool. `1pass` will check for this (and
+other) dependencies and remind you to install them.
+
 ## Introduction
 
 **1pass** is designed to make using your 1Password usernames and passwords quick and easy. It is
@@ -34,11 +40,14 @@ Together these features enable easy use of 1Password-stored credentials.
 ## Installation
 
 First make sure that the `op` [1Password
-CLI](https://support.1password.com/command-line-getting-started/) and the `jq` [JQ](https://stedolan.github.io/jq) are installed. If you use homebrew cask on Mac OS X, this works well:
+CLI](https://support.1password.com/command-line-getting-started/) and the `jq`
+[JQ](https://stedolan.github.io/jq) and
+[expect](https://core.tcl.tk/expect/index) requirements are installed. If you use
+homebrew cask on Mac OS X, this works well:
 
 ```sh
 $ brew cask install 1password-cli
-$ brew install jq
+$ brew install jq expect
 ```
 
 Copy the 1pass executable file to a suitable location on your PATH (for example, /usr/local/bin)
@@ -167,6 +176,8 @@ $ 1pass -p MyBankAccount pin
 
 **1pass** has special support for TOTP fields -- these are fetched directly via `op`
 rather than a local cache. (Thanks to (@ev0rtex)[https://github.com/ev0rtex]).
+Note that this **is different** from using TOTP 2FA to log into your 1Password
+account (that is supported too -- see below)
 
 ```sh
 $ 1pass -p MyBankAccount totp
@@ -196,6 +207,14 @@ from the online 1Password vault.
 
 Similarly, 1Password CLI sessions last for 30 minutes from the time of last use. **1pass** will
 manage the session for you, and refresh it as needed.
+
+## 2FA for 1Password
+
+If you have turned on two-factor authentication (2FA) support for your 1Password
+account, then 1pass will prompt for you to enter a TOTP code when creating a
+session. Currently, you will need to re-enter this code after every session
+expiration (30 minutes of inactivity). Unfortunately this makes using 1pass in
+non-interactive scripts less useful.
 
 ## License
 
