@@ -218,8 +218,9 @@ non-interactive scripts less useful.
 
 ## License
 
-Copyright (c) 2017, David Creemer (twitter: [@dcreemer](https://twitter.com/dcreemer)) with some
-components from other GPL 2+ software.
+Copyright (c) 2017-2019, David Creemer (twitter:
+[@dcreemer](https://twitter.com/dcreemer)) with some components from other GPL 2+
+software.
 
 [GPL3](https://raw.githubusercontent.com/dcreemer/1pass/master/LICENSE)
 

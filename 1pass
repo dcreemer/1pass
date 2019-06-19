@@ -21,7 +21,7 @@
 set -e
 set -o pipefail
 
-VERSION="1.1"
+VERSION="1.1.1"
 
 if [ "$XDG_CONFIG_HOME" != "" ] && [ ! -d "${HOME}/.1pass" ]; then
     op_dir="${XDG_CONFIG_HOME}/1pass"
@@ -356,8 +356,9 @@ get_by_title()
     if [ ! -r $index ] || [ $refresh -eq 1 ]; then
         fetch_index
     fi
-    local uuid=$(gpg -qd $index | jq -r ".[] | select(.overview.title==\"${title}\").uuid")
-    local tid=$(gpg -qd $index | jq -r ".[] | select(.overview.title==\"${title}\").templateUuid")
+    # read both uuid and templateUuid. Complicated call is so that we only call GPG once
+    q=".[] | select(.overview.title==\"${title}\").uuid + \":\" + select(.overview.title==\"${title}\").templateUuid"
+    IFS=: read uuid tid <<< $(gpg -qd $index | jq -r "${q}")
     if [ "$tid" != "" ]; then
         get_${tid} $uuid $field
         if [ $? ]; then
