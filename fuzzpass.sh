@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+#
 # -*- shell-script -*-
 #
 # Use fzf (https://github.com/junegunn/fzf) to rapidly select an account,
@@ -9,10 +11,12 @@
 #
 
 fuzzpass() {
-    local arg=$1
+    local arg
+    arg=$1
     if [ "$arg" == "" ]; then
         arg="password"
     fi
-    local item=$(1pass | fzf);
-    [[ ! -z "$item" ]] && 1pass $item $arg
+    local item
+    item=$(1pass | fzf);
+    [[ -n "$item" ]] && 1pass "$item" "$arg"
 }
