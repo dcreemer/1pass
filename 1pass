@@ -42,29 +42,37 @@ if [ $# -eq 1 ] && [ "$1" == "-V" ]; then
 fi
 
 # test setup:
-if [ ! -d $op_dir ] || [ ! -r ${op_dir}/config ]; then
-    mkdir -p $cache_dir
-    cat > ${op_dir}/config <<CONFIG
+if [ ! -d "$op_dir" ] || [ ! -r "${op_dir}/config" ]; then
+    mkdir -p "$cache_dir"
+    cat > "${op_dir}/config" <<CONFIG
 # configuration file for 1pass
 
 # set to the ID of your GPG key
-self_key=
+self_key=""
 
 # set to the email address associated with your 1Password account
-email=
+email=""
 
 # set to your 1password domain (e.g. example.1password.com)
-domain=
+domain=""
 CONFIG
-    chmod go-rw ${op_dir}/config
+    chmod go-rw "${op_dir}/config"
     echo "please config 1pass by editing ${op_dir}/config"
     exit 1
 fi
-if [ ! -d $cache_dir ]; then
-    mkdir -p $cache_dir
+if [ ! -d "$cache_dir" ]; then
+    mkdir -p "$cache_dir"
 fi
 
-source ${op_dir}/config
+# these are read from the config file:
+email=""
+self_key=""
+domain=""
+# old setting, still supported
+subdomain=""
+
+# shellcheck source=config.sample
+source "${op_dir}/config"
 
 master=${op_dir}/_master.gpg
 secret=${op_dir}/_secret.gpg
@@ -87,13 +95,13 @@ if [ "$subdomain" == "" ] && [ "$domain" == "" ]; then
 fi
 domain=${domain:-${subdomain}.1password.com}
 
-if [ ! -r ${master} ]; then
+if [ ! -r "${master}" ]; then
     echo "please put your master password into ${master}"
     echo "ex: echo \"master-password\" | gpg -er $email > ${master}"
     exit 1
 fi
 
-if [ ! -r ${secret} ]; then
+if [ ! -r "${secret}" ]; then
     echo "please put your ${domain} secret key into ${secret}"
     echo "ex: echo \"A3-XXXXXX-XXXXXX-XXXXX-XXXXX-XXXXX-XXXXX\" | gpg -er $email > ${secret}"
     exit 1
@@ -139,7 +147,7 @@ sanity_check()
         if [ $verbose -eq 1 ]; then
             echo "checking for $cmd"
         fi
-        if [ ! -x "`which $cmd`" ]; then
+        if ! command -v "$cmd" > /dev/null; then
             echo "Cannot find the '$cmd' command. Please make sure it is installed"
             exit 1
         fi
@@ -148,8 +156,10 @@ sanity_check()
 
 signin()
 {
-    local pw=$(gpg -d -q $master)
-    local se=$(gpg -d -q $secret)
+    local pw
+    pw=$(gpg -d -q "$master")
+    local se
+    se=$(gpg -d -q "$secret")
     if [ $verbose -eq 1 ]; then
         echo "signing in to ${domain} $email"
     fi
@@ -168,15 +178,18 @@ signin()
                eof
         }
     "
-    local output0=$(expect -c "${script}")
-    local output=$(echo "${output0}" | grep "export" || echo -n "_fail_")
+    local output0
+    output0=$(expect -c "${script}")
+    local output
+    output=$(echo "${output0}" | grep "export" || echo -n "_fail_")
     if [ "$output" == "_fail_" ]; then
         echo "1pass failed to signin to ${domain}"
         exit 1
     fi
     # extract token from 'export OP_SESSION_domain="asdsad"'
-    local token=$(expr "${output}" : '.*="\(.*\)"')
-    echo -n "${token}" | gpg -qe --batch -r $self_key > $session
+    local token
+    token=$(expr "${output}" : '.*="\(.*\)"')
+    echo -n "${token}" | gpg -qe --batch -r "$self_key" > "$session"
 }
 
 init_session()
@@ -186,21 +199,21 @@ init_session()
         return
     fi
     # test for stale session
-    if [ ! -r $session ] || [ ! $(find $session -mmin -29) ] || [ $refresh -eq 1 ]; then
+    if [ ! -r "$session" ] || [ ! "$(find "$session" -mmin -29)" ] || [ $refresh -eq 1 ]; then
         signin
     else
         if [ $verbose -eq 1 ]; then
             echo "using existing session token"
         fi
     fi
-    token=$(gpg -d -q $session)
-    touch $session
+    token=$(gpg -d -q "$session")
+    touch "$session"
 }
 
 forget_session()
 {
-    unset $OP_SESSION_NAME
-    rm -f $session
+    unset "$OP_SESSION_NAME"
+    rm -f "$session"
     gpgconf --kill gpg-agent
     echo "cleared local session"
 }
@@ -214,16 +227,17 @@ fetch_index()
     if [ $verbose -eq 1 ]; then
         echo "fetching index of all items"
     fi
-    local items=$(op list items --session=${token} || echo -n "_fail_")
+    local items
+    items=$(op list items --session="${token}" || echo -n "_fail_")
     if [ "$items" == "_fail_" ]; then
         echo "1pass: failed to fetch index of all items"
         exit 1
     fi
     # backup current index
-    if [ -r $index ]; then
-        cp -a $index ${index}.bak
+    if [ -r "$index" ]; then
+        cp -a "$index" "${index}.bak"
     fi
-    echo -n "${items}" | gpg -qe --batch -r $self_key > $index
+    echo -n "${items}" | gpg -qe --batch -r "$self_key" > "$index"
 }
 
 #
@@ -236,12 +250,13 @@ fetch_item()
     if [ $verbose -eq 1 ]; then
         echo "fetching item $uuid"
     fi
-    local item=$(op get item $uuid --session=$token || echo -n "_fail_")
+    local item
+    item=$(op get item "$uuid" --session="$token" || echo -n "_fail_")
     if [ "$item" == "_fail_" ]; then
         echo "1pass: failed to fetch item $uuid"
         exit 1
     fi
-    echo -n "${item}" | gpg -qe --batch -r $self_key > ${cache_dir}/${uuid}.gpg
+    echo -n "${item}" | gpg -qe --batch -r "$self_key" > "${cache_dir}/${uuid}.gpg"
 }
 
 #
@@ -249,10 +264,10 @@ fetch_item()
 #
 list_items()
 {
-    if [ ! -r $index ] || [ $refresh -eq 1 ]; then
+    if [ ! -r "$index" ] || [ $refresh -eq 1 ]; then
         fetch_index
     fi
-    gpg -qd $index | jq -r ".[].overview.title" | LC_ALL="C" bash -c 'sort -bf'
+    gpg -qd "$index" | jq -r ".[].overview.title" | LC_ALL="C" bash -c 'sort -bf'
 }
 
 #
@@ -262,8 +277,8 @@ ensure_item()
 {
     local uuid=$1
     local file=${cache_dir}/${uuid}.gpg
-    if [ ! -r $file ] || [ $refresh -eq 1 ]; then
-        fetch_item $uuid
+    if [ ! -r "$file" ] || [ $refresh -eq 1 ]; then
+        fetch_item "$uuid"
     fi
 }
 
@@ -275,13 +290,13 @@ get_001()
     local uuid=$1
     local field=$2
     local q=""
-    if [ $field == "username" ] || [ $field == "password" ]; then
+    if [ "$field" == "username" ] || [ "$field" == "password" ]; then
         q=".details.fields[] | select(.designation==\"${field}\").value"
     else
         q=".details.sections[] | select(.fields).fields[] | select(.t==\"${field}\").v"
     fi
-    ensure_item $uuid
-    get_result=$(gpg -qd ${cache_dir}/${uuid}.gpg | jq -r "${q}" || echo -n "_fail_")
+    ensure_item "$uuid"
+    get_result=$(gpg -qd "${cache_dir}/${uuid}.gpg" | jq -r "${q}" || echo -n "_fail_")
 }
 
 #
@@ -292,13 +307,13 @@ get_005()
     local uuid=$1
     local field=$2
     local q=""
-    if [ $field == "password" ]; then
+    if [ "$field" == "password" ]; then
         q=".details.${field}"
     else
         q=".details.sections[] | select(.fields).fields[] | select(.t==\"${field}\").v"
     fi
-    ensure_item $uuid
-    get_result=$(gpg -qd ${cache_dir}/${uuid}.gpg | jq -r "${q}" || echo -n "_fail_")
+    ensure_item "$uuid"
+    get_result=$(gpg -qd "${cache_dir}/${uuid}.gpg" | jq -r "${q}" || echo -n "_fail_")
 }
 
 #
@@ -308,16 +323,18 @@ get_totp()
 {
     # Make sure we have a current and valid session and then get the UUID
     init_session
-    if [ ! -r $index ] || [ $refresh -eq 1 ]; then
+    if [ ! -r "$index" ] || [ $refresh -eq 1 ]; then
         fetch_index
     fi
-    local uuid=$(gpg -qd $index | jq -r ".[] | select(.overview.title==\"${1}\").uuid")
+    local uuid
+    uuid=$(gpg -qd "$index" | jq -r ".[] | select(.overview.title==\"${1}\").uuid")
 
     # Fetch the TOTP
     if [ $verbose -eq 1 ]; then
         echo "fetching TOTP for $uuid"
     fi
-    local totp=$(op get totp $uuid --session=$token || echo -n "_fail_")
+    local totp
+    totp=$(op get totp "$uuid" --session="$token" || echo -n "_fail_")
     if [ "$item" == "_fail_" ]; then
         echo "1pass: failed to fetch TOTP for $uuid"
         exit 1
@@ -333,14 +350,16 @@ output_result()
     if [ $print_output -eq 1 ]; then
         echo "${get_result}"
     else
-        local os=$(uname)
+        local os
+        os=$(uname)
         if [ "$os" == "Darwin" ]; then
             echo -n "${get_result}" | pbcopy
         elif [ "$os" == "Linux" ] || [ "$os" == "FreeBSD" ]; then
             echo -n "${get_result}" | xclip -selection clipboard
         fi
         # sleep and reset clipboard
-        local sleep_argv0="1pass sleep for user $(id -u)"
+        local sleep_argv0
+        sleep_argv0="1pass sleep for user $(id -u)"
         pkill -f "^$sleep_argv0" 2>/dev/null && sleep 0.5
         (
             ( exec -a "$sleep_argv0" sleep "$clip_time" )
@@ -353,14 +372,14 @@ get_by_title()
 {
     local title=$1
     local field=$2
-    if [ ! -r $index ] || [ $refresh -eq 1 ]; then
+    if [ ! -r "$index" ] || [ $refresh -eq 1 ]; then
         fetch_index
     fi
     # read both uuid and templateUuid. Complicated call is so that we only call GPG once
     q=".[] | select(.overview.title==\"${title}\").uuid + \":\" + select(.overview.title==\"${title}\").templateUuid"
-    IFS=: read uuid tid <<< $(gpg -qd $index | jq -r "${q}")
+    IFS=':' read -r uuid tid <<< "$(gpg -qd "$index" | jq -r "${q}")"
     if [ "$tid" != "" ]; then
-        get_${tid} $uuid $field
+        "get_${tid}" "$uuid" "$field"
         if [ $? ]; then
             output_result
         fi
@@ -402,7 +421,7 @@ elif [ $# -eq 1 ]; then
     get_by_title "$1" password
 elif [ $# -eq 2 ]; then
     case "$2" in
-        totp ) get_totp "$1"        ;;
-        *    ) get_by_title "$1" $2 ;;
+        totp ) get_totp "$1"          ;;
+        *    ) get_by_title "$1" "$2" ;;
     esac
 fi
