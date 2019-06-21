@@ -48,13 +48,13 @@ if [ ! -d "$op_dir" ] || [ ! -r "${op_dir}/config" ]; then
 # configuration file for 1pass
 
 # set to the ID of your GPG key
-self_key=
+self_key=""
 
 # set to the email address associated with your 1Password account
-email=
+email=""
 
 # set to your 1password domain (e.g. example.1password.com)
-domain=
+domain=""
 CONFIG
     chmod go-rw "${op_dir}/config"
     echo "please config 1pass by editing ${op_dir}/config"
