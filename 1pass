@@ -117,6 +117,7 @@ verbose=0
 print_output=0
 clip_time=30
 OP_SESSION_NAME=$(echo "$domain" | cut -f1 -d'.' | tr '-' '_')
+list_fields=0
 
 usage()
 {
@@ -126,6 +127,7 @@ usage: 1pass [-fhprv] [<Item> [<username|password|totp>]]
   -f   Forget GPG key from gpg-agent, and remove local session
   -h   Help
   -p   Print the 1pass output to stdout, rather than copying to the clipboard
+  -l   List all the known fields for the specified item
   -r   Refresh all appropriate data from 1password.com, ignoring local cache
   -v   Verbose output
   -V   Print 1pass version and exit
@@ -317,6 +319,37 @@ get_005()
 }
 
 #
+# fetch the list of fields from template 001 ("Login")
+#
+get_fields_001()
+{
+    _get_fields_template "$1" "username" "password"
+}
+
+#
+# fetch the list of fields from template 005 ("Password")
+#
+get_fields_005()
+{
+    _get_fields_template "$1" "password"
+}
+
+_get_fields_template()
+{
+    local uuid=$1
+    shift
+    local q='.details.sections[] | select(.fields).fields[] | select(.t!="").t'
+    local fields=("${@}")
+    ensure_item "$uuid"
+    while read -r f; do 
+        fields+=("$f")
+    done < <(gpg -qd "${cache_dir}/${uuid}.gpg" | jq -r "${q}" || echo -n "_fail_")
+    get_result=$(_join_by $'\n' "${fields[@]}")
+}
+
+function _join_by { local IFS="$1"; shift; echo "$*"; }
+
+#
 # fetch a TOTP value for the given item
 #
 get_totp()
@@ -370,8 +403,19 @@ output_result()
 
 get_by_title()
 {
-    local title=$1
-    local field=$2
+    _get_by "get_" "${@}"
+}
+
+get_fields_by_title()
+{
+    _get_by "get_fields_" "${@}"
+}
+
+_get_by()
+{
+    local func=$1
+    local title=$2
+    local field=$3
     if [ ! -r "$index" ] || [ $refresh -eq 1 ]; then
         fetch_index
     fi
@@ -379,14 +423,14 @@ get_by_title()
     q=".[] | select(.overview.title==\"${title}\").uuid + \":\" + select(.overview.title==\"${title}\").templateUuid"
     IFS=':' read -r uuid tid <<< "$(gpg -qd "$index" | jq -r "${q}")"
     if [ "$tid" != "" ]; then
-        "get_${tid}" "$uuid" "$field"
+        "${func}${tid}" "$uuid" "$field"
         if [ $? ]; then
             output_result
         fi
     fi
 }
 
-while getopts "f?h?p?r?v?:" opt; do
+while getopts "f?h?p?l?r?v?:" opt; do
     case $opt in
         h)
             usage
@@ -398,6 +442,10 @@ while getopts "f?h?p?r?v?:" opt; do
             ;;
         p)
             print_output=1
+            ;;
+        l)
+            print_output=1
+            list_fields=1
             ;;
         r)
             refresh=1
@@ -418,7 +466,11 @@ sanity_check
 if [ $# -eq 0 ]; then
     list_items
 elif [ $# -eq 1 ]; then
-    get_by_title "$1" password
+    if [[ $list_fields -eq 1 ]]; then
+        get_fields_by_title "$1"
+    else
+        get_by_title "$1" password
+    fi
 elif [ $# -eq 2 ]; then
     case "$2" in
         totp ) get_totp "$1"          ;;
