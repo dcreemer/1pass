@@ -58,6 +58,31 @@ curl https://raw.githubusercontent.com/dcreemer/1pass/master/1pass > /usr/local/
 chmod a+x /usr/local/bin/1pass
 ```
 
+### Bash Completion
+
+If you would like to install bash-completion for 1pass, place the `bash-completion.sh` script in
+and accessible location and then source it from your `.bash_profile`.  For example:
+
+```sh
+mkdir -p /usr/local/etc/1pass
+curl https://raw.githubusercontent.com/dcreemer/1pass/master/bash_completion.sh > /usr/local/etc/1pass/bash_completion.sh
+echo "source /usr/local/etc/1pass/bash_completion.sh" >> ~/.bash_profile
+```
+
+By default the completion script will look for `fzf` completion support in your environment. If present, 
+it will use fzf completion ([see here](https://github.com/junegunn/fzf#fuzzy-completion-for-bash-and-zsh)). 
+
+_Note: If you have installed `fzf` using homebrew on macOS, make sure you have enabled completion by
+running `$(brew --prefix)/opt/fzf/install --completion` and follow the prompts._
+
+If you do not have fzf or if you turn this feature off it will revert to standard bash completion 
+behavior. If you would like to explicitly disable FZF completion for 1pass, you can do so as follows:
+
+```sh
+export ONEPASS_FZF_COMPLETE=false
+```
+This line should be added to your `.bash_profile`
+
 ## Security and Warning
 
 **1pass** requires you to store your 1Password master password in a local GPG-encrypted file. You
