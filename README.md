@@ -252,4 +252,4 @@ software.
 ## Credits
 
 Some ideas, and a tiny bit of code are taken from [pass](https://www.passwordstore.org) by Jason
-A. Donenfeld. 
+A. Donenfeld. Please see the git commit log for contributions from others.
