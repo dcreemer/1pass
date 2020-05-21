@@ -69,10 +69,14 @@ curl https://raw.githubusercontent.com/dcreemer/1pass/master/bash_completion.sh 
 echo "source /usr/local/etc/1pass/bash_completion.sh" >> ~/.bash_profile
 ```
 
-By default the completion script will look for fzf on your path.  If present, it will use fzf completion
-([see here](https://github.com/junegunn/fzf#fuzzy-completion-for-bash-and-zsh)). If you do not have fzf or if you turn 
-this feature off it will revert to standard bash completion behavior.  If you would like to explicitly disable
-FZF completion for 1pass, you can do so as follows:
+By default the completion script will look for `fzf` completion support in your environment. If present, 
+it will use fzf completion ([see here](https://github.com/junegunn/fzf#fuzzy-completion-for-bash-and-zsh)). 
+
+_Note: If you have installed `fzf` using homebrew on macOS, make sure you have enabled completion by
+running `$(brew --prefix)/opt/fzf/install --completion` and follow the prompts._
+
+If you do not have fzf or if you turn this feature off it will revert to standard bash completion 
+behavior. If you would like to explicitly disable FZF completion for 1pass, you can do so as follows:
 
 ```sh
 export ONEPASS_FZF_COMPLETE=false
