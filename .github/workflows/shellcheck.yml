@@ -1,0 +1,18 @@
+# check with Shellcheck (https://www.shellcheck.net/) linter
+#
+
+name: shellcheck
+
+on: push
+
+jobs:
+    shellcheck:
+        name: Shellcheck
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: checkout code
+              uses: actions/checkout@v2
+
+            - name: Run ShellCheck
+              uses: ludeeus/action-shellcheck@master
