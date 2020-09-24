@@ -1,3 +1,6 @@
+#! /usr/bin/env bash
+# add fuzzyfind (fzf) completion for 1pass objects
+
 function _fzf_complete_1pass() {
   local doFzf=false
   local cword="${COMP_WORDS[$COMP_CWORD]}"
@@ -41,23 +44,23 @@ function _fzf_complete_1pass() {
     local i=0
     for entry in ${COMPREPLY[*]}
     do
-        if [[ "${cword:0:1}" == "'" ]] 
+        if [[ "${cword:0:1}" == "'" ]]
         then
             # started with single quote, escaping only other single quotes
             # [']bla'bla"bla\bla bla --> [']bla'\''bla"bla\bla bla
-            COMPREPLY[$i]="${entry//\'/${escaped_single_qoute}}" 
-        elif [[ "${cword:0:1}" == "\"" ]] 
+            COMPREPLY[$i]="${entry//\'/${escaped_single_qoute}}"
+        elif [[ "${cword:0:1}" == "\"" ]]
         then
             # started with double quote, escaping all double quotes and all backslashes
             # ["]bla'bla"bla\bla bla --> ["]bla'bla\"bla\\bla bla
-            entry="${entry//\\/\\\\}" 
-            COMPREPLY[$i]="${entry//\"/\\\"}" 
-        else 
+            entry="${entry//\\/\\\\}"
+            COMPREPLY[$i]="${entry//\"/\\\"}"
+        else
             # no quotes in front, escaping _everything_
             # [ ]bla'bla"bla\bla bla --> [ ]bla\'bla\"bla\\bla\ bla
-            entry="${entry//\\/\\\\}" 
-            entry="${entry//\'/\'}" 
-            entry="${entry//\"/\\\"}" 
+            entry="${entry//\\/\\\\}"
+            entry="${entry//\'/\'}"
+            entry="${entry//\"/\\\"}"
             COMPREPLY[$i]="${entry// /\\ }"
         fi
         (( i++ ))
