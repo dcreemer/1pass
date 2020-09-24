@@ -24,7 +24,7 @@ $ 1pass Github
 and your Gitbub password will be copied to the clipboard.
 
 The official 1Password CLI application (```op```) can be difficult to use interactively, and unlike
-the Mac OS X or Windows 1Password native applications, requires an internet connection to fetch data
+the macOS or Windows 1Password native applications, requires an internet connection to fetch data
 from your password vaults. **1pass** solves both of these problems. ```Op``` needs session tokens to
 be revalidated manually after 30 minutes of inactivity and produces rich output in JSON format. The
 JSON output is easy for a program to use, but is not trivially consumed by humans without help.
@@ -45,7 +45,7 @@ First make sure that the `op` [1Password
 CLI](https://support.1password.com/command-line-getting-started/) and the `jq`
 [JQ](https://stedolan.github.io/jq) and
 [expect](https://core.tcl.tk/expect/index) requirements are installed. If you use
-homebrew cask on Mac OS X, this works well:
+homebrew cask on macOS, this works well:
 
 ```sh
 $ brew cask install 1password-cli
