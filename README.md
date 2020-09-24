@@ -3,6 +3,8 @@
 **1pass** is a caching wrapper for the [1Password
 CLI](https://support.1password.com/command-line-getting-started/) `op`.
 
+![Shellcheck](https://github.com/dcreemer/1pass/workflows/shellcheck/badge.svg)
+
 ## UPGRADE NOTE
 
 Upgrading to version 1.1 requires installation of the
