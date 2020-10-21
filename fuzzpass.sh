@@ -13,7 +13,7 @@
 fuzzpass() {
     local arg
     arg=$1
-    if [ "$arg" == "" ]; then
+    if [ "$arg" = "" ]; then
         arg="password"
     fi
     local item
