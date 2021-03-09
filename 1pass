@@ -41,6 +41,15 @@ if [ $# -eq 1 ] && [ "$1" == "-V" ]; then
     exit 0
 fi
 
+# Try to find the GPG executable
+if [ -z "$GPG" ]; then
+    # Default to gpg, but prefer what gpgconf says
+    GPG="gpg"
+    if command -v gpgconf >/dev/null 2>&1; then
+        GPG="$( gpgconf | awk -F: '/^gpg:/ { print $NF }' )"
+    fi
+fi
+
 # test setup:
 if [ ! -d "$op_dir" ] || [ ! -r "${op_dir}/config" ]; then
     mkdir -p "$cache_dir"
@@ -97,13 +106,13 @@ domain=${domain:-${subdomain}.1password.com}
 
 if [ ! -r "${master}" ]; then
     echo "please put your master password into ${master}"
-    echo "ex: echo \"master-password\" | gpg -er $email > ${master}"
+    echo "ex: echo \"master-password\" | $GPG -er $email > ${master}"
     exit 1
 fi
 
 if [ ! -r "${secret}" ]; then
     echo "please put your ${domain} secret key into ${secret}"
-    echo "ex: echo \"A3-XXXXXX-XXXXXX-XXXXX-XXXXX-XXXXX-XXXXX\" | gpg -er $email > ${secret}"
+    echo "ex: echo \"A3-XXXXXX-XXXXXX-XXXXX-XXXXX-XXXXX-XXXXX\" | $GPG -er $email > ${secret}"
     exit 1
 fi
 
@@ -144,7 +153,7 @@ USAGE
 
 sanity_check()
 {
-    for cmd in "op" "jq" "gpg" "expect"
+    for cmd in "op" "jq" "$GPG" "expect"
     do
         if [ $verbose -eq 1 ]; then
             echo "checking for $cmd"
@@ -159,9 +168,9 @@ sanity_check()
 signin()
 {
     local pw
-    pw=$(gpg -d -q "$master")
+    pw=$("$GPG" -d -q "$master")
     local se
-    se=$(gpg -d -q "$secret")
+    se=$("$GPG" -d -q "$secret")
     if [ $verbose -eq 1 ]; then
         echo "signing in to ${domain} $email"
     fi
@@ -191,7 +200,7 @@ signin()
     # extract token from 'export OP_SESSION_domain="asdsad"'
     local token
     token=$(expr "${output}" : '.*="\(.*\)"')
-    echo -n "${token}" | gpg -qe --batch -r "$self_key" > "$session"
+    echo -n "${token}" | "$GPG" -qe --batch -r "$self_key" > "$session"
 }
 
 init_session()
@@ -208,7 +217,7 @@ init_session()
             echo "using existing session token"
         fi
     fi
-    token=$(gpg -d -q "$session")
+    token=$("$GPG" -d -q "$session")
     touch "$session"
 }
 
@@ -239,7 +248,7 @@ fetch_index()
     if [ -r "$index" ]; then
         cp -a "$index" "${index}.bak"
     fi
-    echo -n "${items}" | gpg -qe --batch -r "$self_key" > "$index"
+    echo -n "${items}" | "$GPG" -qe --batch -r "$self_key" > "$index"
 }
 
 #
@@ -258,7 +267,7 @@ fetch_item()
         echo "1pass: failed to fetch item $uuid"
         exit 1
     fi
-    echo -n "${item}" | gpg -qe --batch -r "$self_key" > "${cache_dir}/${uuid}.gpg"
+    echo -n "${item}" | "$GPG" -qe --batch -r "$self_key" > "${cache_dir}/${uuid}.gpg"
 }
 
 #
@@ -269,7 +278,7 @@ list_items()
     if [ ! -r "$index" ] || [ $refresh -eq 1 ]; then
         fetch_index
     fi
-    gpg -qd "$index" | jq -r ".[].overview.title" | LC_ALL="C" bash -c 'sort -bf'
+    "$GPG" -qd "$index" | jq -r ".[].overview.title" | LC_ALL="C" bash -c 'sort -bf'
 }
 
 #
@@ -298,7 +307,7 @@ get_001()
         q=".details.sections[] | select(.fields).fields[] | select(.t==\"${field}\").v"
     fi
     ensure_item "$uuid"
-    get_result=$(gpg -qd "${cache_dir}/${uuid}.gpg" | jq -r "${q}" || echo -n "_fail_")
+    get_result=$("$GPG" -qd "${cache_dir}/${uuid}.gpg" | jq -r "${q}" || echo -n "_fail_")
 }
 
 #
@@ -315,7 +324,7 @@ get_005()
         q=".details.sections[] | select(.fields).fields[] | select(.t==\"${field}\").v"
     fi
     ensure_item "$uuid"
-    get_result=$(gpg -qd "${cache_dir}/${uuid}.gpg" | jq -r "${q}" || echo -n "_fail_")
+    get_result=$("$GPG" -qd "${cache_dir}/${uuid}.gpg" | jq -r "${q}" || echo -n "_fail_")
 }
 
 #
@@ -343,7 +352,7 @@ _get_fields_template()
     ensure_item "$uuid"
     while read -r f; do 
         fields+=("$f")
-    done < <(gpg -qd "${cache_dir}/${uuid}.gpg" | jq -r "${q}" || echo -n "_fail_")
+    done < <("$GPG" -qd "${cache_dir}/${uuid}.gpg" | jq -r "${q}" || echo -n "_fail_")
     get_result=$(_join_by $'\n' "${fields[@]}")
 }
 
@@ -360,7 +369,7 @@ get_totp()
         fetch_index
     fi
     local uuid
-    uuid=$(gpg -qd "$index" | jq -r ".[] | select(.overview.title==\"${1}\").uuid")
+    uuid=$("$GPG" -qd "$index" | jq -r ".[] | select(.overview.title==\"${1}\").uuid")
 
     # Fetch the TOTP
     if [ $verbose -eq 1 ]; then
@@ -421,7 +430,7 @@ _get_by()
     fi
     # read both uuid and templateUuid. Complicated call is so that we only call GPG once
     q=".[] | select(.overview.title==\"${title}\").uuid + \":\" + select(.overview.title==\"${title}\").templateUuid"
-    IFS=':' read -r uuid tid <<< "$(gpg -qd "$index" | jq -r "${q}")"
+    IFS=':' read -r uuid tid <<< "$("$GPG" -qd "$index" | jq -r "${q}")"
     if [ "$tid" != "" ]; then
         "${func}${tid}" "$uuid" "$field"
         if [ $? ]; then
