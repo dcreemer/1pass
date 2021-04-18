@@ -156,10 +156,10 @@ sanity_check()
     for cmd in "op" "jq" "$GPG" "expect"
     do
         if [ $verbose -eq 1 ]; then
-            echo "checking for $cmd"
+            echo "checking for $cmd" 1>&2
         fi
         if ! command -v "$cmd" > /dev/null; then
-            echo "Cannot find the '$cmd' command. Please make sure it is installed"
+            echo "Cannot find the '$cmd' command. Please make sure it is installed" 1>&2
             exit 1
         fi
     done
@@ -172,7 +172,7 @@ signin()
     local se
     se=$("$GPG" -d -q "$secret")
     if [ $verbose -eq 1 ]; then
-        echo "signing in to ${domain} $email"
+        echo "signing in to ${domain} $email" 1>&2
     fi
     local script="
         spawn op signin ${domain} ${email} ${se}
@@ -214,7 +214,7 @@ init_session()
         signin
     else
         if [ $verbose -eq 1 ]; then
-            echo "using existing session token"
+            echo "using existing session token" 1>&2
         fi
     fi
     token=$("$GPG" -d -q "$session")
@@ -236,7 +236,7 @@ fetch_index()
 {
     init_session
     if [ $verbose -eq 1 ]; then
-        echo "fetching index of all items"
+        echo "fetching index of all items" 1>&2
     fi
     local items
     items=$(op list items --session="${token}" || echo -n "_fail_")
@@ -259,7 +259,7 @@ fetch_item()
     local uuid=$1
     init_session
     if [ $verbose -eq 1 ]; then
-        echo "fetching item $uuid"
+        echo "fetching item $uuid" 1>&2
     fi
     local item
     item=$(op get item "$uuid" --session="$token" || echo -n "_fail_")
@@ -373,7 +373,7 @@ get_totp()
 
     # Fetch the TOTP
     if [ $verbose -eq 1 ]; then
-        echo "fetching TOTP for $uuid"
+        echo "fetching TOTP for $uuid" 1>&2
     fi
     local totp
     totp=$(op get totp "$uuid" --session="$token" || echo -n "_fail_")
