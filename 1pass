@@ -350,7 +350,7 @@ _get_fields_template()
     local q='.details.sections[] | select(.fields).fields[] | select(.t!="").t'
     local fields=("${@}")
     ensure_item "$uuid"
-    while read -r f; do 
+    while read -r f; do
         fields+=("$f")
     done < <("$GPG" -qd "${cache_dir}/${uuid}.gpg" | jq -r "${q}" || echo -n "_fail_")
     get_result=$(_join_by $'\n' "${fields[@]}")
