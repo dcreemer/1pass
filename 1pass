@@ -35,6 +35,8 @@ else
     cache_dir=${op_dir}/cache
 fi
 
+os=$(uname)
+
 # check for bare -V/version request first:
 if [ $# -eq 1 ] && [ "$1" == "-V" ]; then
     echo "${VERSION}"
@@ -153,7 +155,13 @@ USAGE
 
 sanity_check()
 {
-    for cmd in "op" "jq" "$GPG" "expect"
+    programs=(op jq $GPG expect)
+
+    if [ "$os" == "Linux" ] || [ "$os" == "FreeBSD" ]; then
+      programs+=(xclip)
+    fi
+
+    for cmd in ${programs[@]}
     do
         if [ $verbose -eq 1 ]; then
             echo "checking for $cmd"
@@ -392,20 +400,19 @@ output_result()
     if [ $print_output -eq 1 ]; then
         echo "${get_result}"
     else
-        local os
-        os=$(uname)
-        if [ "$os" == "Darwin" ]; then
-            echo -n "${get_result}" | pbcopy
-        elif [ "$os" == "Linux" ] || [ "$os" == "FreeBSD" ]; then
-            echo -n "${get_result}" | xclip -selection clipboard
+        local pbcopy
+        pbcopy=pbcopy
+        if [ "$os" == "Linux" ] || [ "$os" == "FreeBSD" ]; then
+            pbcopy="xclip -selection clipboard"
         fi
+        echo -n "${get_result}" | $pbcopy
         # sleep and reset clipboard
         local sleep_argv0
         sleep_argv0="1pass sleep for user $(id -u)"
         pkill -f "^$sleep_argv0" 2>/dev/null && sleep 0.5
         (
             ( exec -a "$sleep_argv0" sleep "$clip_time" )
-            echo -n "CLEAR" | pbcopy
+            echo -n "CLEAR" | $pbcopy
         ) 2>/dev/null & disown
     fi
 }
