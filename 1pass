@@ -166,8 +166,11 @@ USAGE
 
 sanity_check()
 {
-    programs=(op jq $GPG expect oathtool)
+    programs=(op jq $GPG expect)
 
+    if [ "$use_totp" == "1" ]; then
+      programs+=(oathtool)
+    fi
     if [ "$os" == "Linux" ] || [ "$os" == "FreeBSD" ]; then
       programs+=(xclip)
     fi
