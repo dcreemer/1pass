@@ -52,6 +52,13 @@ $ brew cask install 1password-cli
 $ brew install jq expect
 ```
 
+If you want to automate 2FA (TOTP) logging into 1password.com, then also install the oathtool, and
+see further instructions below.
+
+```sh
+$ brew install oath-toolkit
+```
+
 Copy the 1pass executable file to a suitable location on your PATH (for example, /usr/local/bin)
 and ensure that it is executable. For example:
 
@@ -237,11 +244,17 @@ manage the session for you, and refresh it as needed.
 
 ## 2FA for 1Password
 
-If you have turned on two-factor authentication (2FA) support for your 1Password
-account, then 1pass will prompt for you to enter a TOTP code when creating a
-session. Currently, you will need to re-enter this code after every session
-expiration (30 minutes of inactivity). Unfortunately this makes using 1pass in
-non-interactive scripts less useful.
+If you have turned on two-factor authentication (2FA) support for your 1Password account, then
+1pass will prompt for you to enter a TOTP code when creating a session. You can either re-enter
+this code after every session expiration (30 minutes of inactivity), or automate entry of the code
+using the oath-toolkit `oathtool` command. If you wish to automate the 2FA process, add
+`use_totp="1"` to your config file, and follow the instructions to store the TOTP secret:
+
+```sh
+$ ./1pass -rv
+please put your ${domain} totp secret into /home/me/.1pass/_totp.gpg
+ex: echo \"XXXXXXXXXXXXXXXX\" | $GPG -er $email > /home/me/.1pass/_totp.gpg
+```
 
 ## License
 
