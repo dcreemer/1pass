@@ -67,7 +67,7 @@ email=""
 # set to your 1password domain (e.g. example.1password.com)
 domain=""
 
-# if using two-factor authentication set to 1
+# if using two-factor authentication automation with oathtool, set to 1
 use_totp="0"
 
 CONFIG
@@ -83,6 +83,8 @@ fi
 email=""
 self_key=""
 domain=""
+use_totp=""
+
 # old setting, still supported
 subdomain=""
 
@@ -166,7 +168,7 @@ USAGE
 
 sanity_check()
 {
-    programs=(op jq $GPG expect)
+    programs=(op jq "$GPG" expect)
 
     if [ "$use_totp" == "1" ]; then
       programs+=(oathtool)
@@ -175,7 +177,7 @@ sanity_check()
       programs+=(xclip)
     fi
 
-    for cmd in ${programs[@]}
+    for cmd in "${programs[@]}"
     do
         if [ $verbose -eq 1 ]; then
             echo "checking for $cmd" 1>&2
@@ -193,9 +195,11 @@ signin()
     pw=$("$GPG" -d -q "$master")
     local se
     se=$("$GPG" -d -q "$secret")
-    local ot
     if [ "${use_totp}" == "1" ]; then
-        ot=$(oathtool -b --totp $("$GPG" -d -q "$totp"))
+        local ot
+        local totp
+        totp=$("$GPG" -d -q "$totp")
+        ot=$(oathtool -b --totp "$totp")
     fi
     if [ $verbose -eq 1 ]; then
         echo "signing in to ${domain} $email" 1>&2
