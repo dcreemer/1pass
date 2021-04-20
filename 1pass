@@ -66,6 +66,10 @@ email=""
 
 # set to your 1password domain (e.g. example.1password.com)
 domain=""
+
+# if using two-factor authentication set to 1
+use_totp="0"
+
 CONFIG
     chmod go-rw "${op_dir}/config"
     echo "please config 1pass by editing ${op_dir}/config"
@@ -87,6 +91,7 @@ source "${op_dir}/config"
 
 master=${op_dir}/_master.gpg
 secret=${op_dir}/_secret.gpg
+totp=${op_dir}/_totp.gpg
 
 # check settings:
 
@@ -115,6 +120,12 @@ fi
 if [ ! -r "${secret}" ]; then
     echo "please put your ${domain} secret key into ${secret}"
     echo "ex: echo \"A3-XXXXXX-XXXXXX-XXXXX-XXXXX-XXXXX-XXXXX\" | $GPG -er $email > ${secret}"
+    exit 1
+fi
+
+if [ "${use_totp}" == "1" ] && [ ! -r "${totp}" ]; then
+    echo "please put your ${domain} totp secret into ${totp}"
+    echo "ex: echo \"XXXXXXXXXXXXXXXX\" | $GPG -er $email > ${totp}"
     exit 1
 fi
 
@@ -157,6 +168,9 @@ sanity_check()
 {
     programs=(op jq $GPG expect)
 
+    if [ "$use_totp" == "1" ]; then
+      programs+=(oathtool)
+    fi
     if [ "$os" == "Linux" ] || [ "$os" == "FreeBSD" ]; then
       programs+=(xclip)
     fi
@@ -179,24 +193,46 @@ signin()
     pw=$("$GPG" -d -q "$master")
     local se
     se=$("$GPG" -d -q "$secret")
+    local ot
+    if [ "${use_totp}" == "1" ]; then
+        ot=$(oathtool -b --totp $("$GPG" -d -q "$totp"))
+    fi
     if [ $verbose -eq 1 ]; then
         echo "signing in to ${domain} $email" 1>&2
     fi
-    local script="
-        spawn op signin ${domain} ${email} ${se}
-        expect \"${domain}:\"
-        send \"${pw}\n\"
-        expect {
-               \"Enter your six-digit authentication code:\" {
-                       puts -nonewline stderr \"Enter your six-digit authentication code: \"
-                       flush stderr
-                       interact -o \"\r\" return
-                       puts stderr \"\"
-                       exp_continue
-               }
-               eof
-        }
-    "
+    local script
+    if [ "${use_totp}" == "0" ]; then
+        script="
+            spawn op signin ${domain} ${email} ${se}
+            expect \"${domain}:\"
+            send \"${pw}\n\"
+            expect {
+                   \"Enter your six-digit authentication code:\" {
+                           puts -nonewline stderr \"Enter your six-digit authentication code: \"
+                           flush stderr
+                           interact -o \"\r\" return
+                           puts stderr \"\"
+                           exp_continue
+                   }
+                   eof
+            }
+        "
+    else
+        local script="
+            spawn op signin ${domain} ${email} ${se}
+            expect \"${domain}:\"
+            send \"${pw}\n\"
+            expect {
+                   \"Enter your six-digit authentication code:\" {
+                           flush stderr
+                           send -- \"$ot\r\"
+                           puts stderr \"\"
+                           exp_continue
+                   }
+                   eof
+            }
+        "
+    fi
     local output0
     output0=$(expect -c "${script}")
     local output
