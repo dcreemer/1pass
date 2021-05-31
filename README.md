@@ -48,7 +48,7 @@ CLI](https://support.1password.com/command-line-getting-started/) and the `jq`
 homebrew cask on macOS, this works well:
 
 ```sh
-$ brew cask install 1password-cli
+$ brew install 1password-cli
 $ brew install jq expect
 ```
 
