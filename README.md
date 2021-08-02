@@ -21,7 +21,7 @@ as described below, you can obtain an account password in a shell simply by typi
 $ 1pass Github
 ```
 
-and your Gitbub password will be copied to the clipboard.
+and your Github password will be copied to the clipboard.
 
 The official 1Password CLI application (```op```) can be difficult to use interactively, and unlike
 the macOS or Windows 1Password native applications, requires an internet connection to fetch data
@@ -35,9 +35,6 @@ JSON output is easy for a program to use, but is not trivially consumed by human
 - an encrypted local cache of 1Password CLI results.
 
 Together these features enable easy use of 1Password-stored credentials.
-
-[![asciicast](https://asciinema.org/a/eiE9JmHW0um7Ee0FVj488GYo6.png)](https://asciinema.org/a/eiE9JmHW0um7Ee0FVj488GYo6)
-
 
 ## Installation
 
@@ -197,6 +194,14 @@ The contents of the clipboard will be automatically cleared after 30 seconds. Yo
 
 ```sh
 $ 1pass -p MyBankAccount username
+me@example.com
+```
+
+Sometimes it's easier to pass the title to search for via stdin, rather than as a command line
+argument. Use the `-` character to force 1pass to read from stdin for the value.
+
+```sh
+$ echo "MyBankAccount" | 1pass -p - username
 me@example.com
 ```
 

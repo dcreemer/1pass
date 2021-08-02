@@ -21,7 +21,7 @@
 set -e
 set -o pipefail
 
-VERSION="1.4"
+VERSION="1.5"
 
 if [ "$XDG_CONFIG_HOME" != "" ] && [ ! -d "${HOME}/.1pass" ]; then
     op_dir="${XDG_CONFIG_HOME}/1pass"
@@ -146,7 +146,7 @@ list_fields=0
 usage()
 {
 cat <<USAGE
-usage: 1pass [-fhprv] [<Item> [<username|password|totp>]]
+usage: 1pass [-fhprv] [<Item>|- [<username|password|totp>]]
 
   -f   Forget GPG key from gpg-agent, and remove local session
   -h   Help
@@ -159,7 +159,8 @@ usage: 1pass [-fhprv] [<Item> [<username|password|totp>]]
 With no arguments, prints a list of all Logins and Passwords in all 1Password vaults.
 
 With a single argument, fetches the Item (Login, Password, or TOTP) matching the
-given name, and copies the resulting password to the clipboard.
+given name, and copies the resulting password to the clipboard. If "-" is supplied
+for <Item>, the item is read from stdin.
 
 With two arguments, fetches the specified field (e.g.) "username" from the named
 item, and copies the results to the clipboard.
@@ -494,6 +495,12 @@ _get_by()
     local func=$1
     local title=$2
     local field=$3
+    if [ "$title" == "-" ]; then
+        # read title from stdin. turn off error propogation to handle EOF as well as NL
+        set +e
+        read title
+        set -e
+    fi
     if [ ! -r "$index" ] || [ $refresh -eq 1 ]; then
         fetch_index
     fi
