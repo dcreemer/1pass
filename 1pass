@@ -498,7 +498,7 @@ _get_by()
     if [ "$title" == "-" ]; then
         # read title from stdin. turn off error propogation to handle EOF as well as NL
         set +e
-        read title
+        read -r title
         set -e
     fi
     if [ ! -r "$index" ] || [ $refresh -eq 1 ]; then
