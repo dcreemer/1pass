@@ -223,8 +223,16 @@ $ 1pass -p MyBankAccount totp
 9865432
 ```
 
+## FZF Integration
+
 **1pass** can be nicely combined with [fzf](https://github.com/junegunn/fzf) for fuzzy search and
-completion. See [fuzzpass.sh](fuzzpass.sh) or
+completion.
+
+Starting with 1pass v1.5:
+
+`1pass | fzf | 1pass -p -`
+
+In older versions: See [fuzzpass.sh](fuzzpass.sh) or
 [fuzzpass.fish](fuzzpass.fish) for sample integration functions.
 
 ## Emacs
@@ -236,6 +244,27 @@ For the brave, a trivial Emacs wrapper library is included. E.g.
 (setq freenode-nick-password (1pass--item-password "Freenode/nick1"))
 (setq freenode-nick-password (1pass--item-field "Freenode" "server"))
 ```
+
+## Iterm2 integration
+
+This integration lets you select and insert passwords into programs running in iTerm2(shell).  If you are tired of typing in your sudo password, this is for you.
+
+This is effectively a clone of [sudolikeaboss](https://github.com/ravenac95/sudolikeaboss) functionality. with the caveat that all of your passwords are available, not just ones tagged x-sudolikeaboss
+
+Using [choose](https://github.com/chipsenkbeil/choose) (a GUI fzf clone)
+
+in iTerm2, go to preferences, then keys, add a new key `open-apple+/` to run coprocess and then copy paste in the command to run box:
+
+`export PATH="/usr/local/bin:/usr/bin"; 1pass | choose | 1pass -p -`
+
+Then start a program asking for input like `sudo -s` and then at the password prompt push the key you assigned earlier(`open-apple+/` above) and select the password title by typing or arrowing down/up and then hit enter.  It might take a second, as 1pass has to go fetch your password from 1pass, but it then should type in your password and hit enter for you.
+
+If you run into trouble, iTerm2 should attach a little yellow bar at the top, select 'view errors' and it should then open a new window showing the output of the commands above, you will need to work through whatever issue comes up.
+
+If you get a `Command not found error` You installed choose, 1pass or op other than `/usr/local/bin/`, you will need to edit the PATH part of the line above.
+
+FZF will not work in place of choose, as coprocesses if they want to ask for user input need to happen in their own window.
+
 
 ## Caching and Sessions
 
