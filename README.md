@@ -310,7 +310,7 @@ ex: echo \"XXXXXXXXXXXXXXXX\" | $GPG -er $email > /home/me/.1pass/_totp.gpg
 
 ## License
 
-Copyright (c) 2017-2019, David Creemer (twitter:
+Copyright (c) 2017-2021, David Creemer (twitter:
 [@dcreemer](https://twitter.com/dcreemer)) with some components from other GPL 2+
 software.
 
