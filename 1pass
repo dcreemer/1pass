@@ -377,6 +377,25 @@ get_005()
 }
 
 #
+# fetch a field from template 003 ("Secure Note / notesPlain")
+#
+get_003()
+{
+    local uuid=$1
+    local field=$2
+    if [ "$field" == "notes" ]; then
+        # notes feels more natural than notesPlain
+        q=".details.notesPlain"
+    else
+        q=".details.sections[] | select(.fields).fields[] | select(.t==\"${field}\").v"
+    fi
+
+    ensure_item "$uuid"
+
+    get_result=$(gpg -qd "${cache_dir}/${uuid}.gpg" | jq -r "${q}" || echo -n "_fail_")
+}
+
+#
 # fetch a field from template 110 ("Server")
 #
 get_110()
@@ -396,6 +415,14 @@ get_110()
 get_fields_001()
 {
     _get_fields_template "$1" "username" "password"
+}
+
+#
+# fetch the list of fields from template 003 ("Secure Note")
+#
+get_fields_003()
+{
+    _get_fields_template "$1" "notes"
 }
 
 #
