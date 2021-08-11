@@ -382,7 +382,7 @@ get_005()
 get_003()
 {
     local uuid=$1
-    local field=$2
+    local field=${2/"DEFAULT"/"notes"}
     if [ "$field" == "notes" ]; then
         # notes feels more natural than notesPlain
         q=".details.notesPlain"
