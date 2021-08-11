@@ -348,7 +348,7 @@ ensure_item()
 get_001()
 {
     local uuid=$1
-    local field=$2
+    local field=${2/"DEFAULT"/"password"}
     local q=""
     if [ "$field" == "username" ] || [ "$field" == "password" ]; then
         q=".details.fields[] | select(.designation==\"${field}\").value"
@@ -365,7 +365,7 @@ get_001()
 get_005()
 {
     local uuid=$1
-    local field=$2
+    local field=${2/"DEFAULT"/"password"}
     local q=""
     if [ "$field" == "password" ]; then
         q=".details.${field}"
@@ -382,7 +382,7 @@ get_005()
 get_110()
 {
     local uuid=$1
-    local field=$2
+    local field=${2/"DEFAULT"/"password"}
     local q=".details.sections[] | select(.fields).fields[] | select(.t==\"${field}\").v"
 
     ensure_item "$uuid"
@@ -554,7 +554,7 @@ elif [ $# -eq 1 ]; then
     if [[ $list_fields -eq 1 ]]; then
         get_fields_by_title "$1"
     else
-        get_by_title "$1" password
+        get_by_title "$1" DEFAULT
     fi
 elif [ $# -eq 2 ]; then
     case "$2" in
