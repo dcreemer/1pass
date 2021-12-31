@@ -198,7 +198,6 @@ signin()
     se=$("$GPG" -d -q "$secret")
     if [ "${use_totp}" == "1" ]; then
         local ot
-        local totp
         totp=$("$GPG" -d -q "$totp")
         ot=$(oathtool -b --totp "$totp")
     fi
@@ -466,9 +465,17 @@ get_totp()
     if [ ! -r "$index" ] || [ $refresh -eq 1 ]; then
         fetch_index
     fi
-    local uuid
-    uuid=$("$GPG" -qd "$index" | jq -r ".[] | select(.overview.title==\"${1}\").uuid")
+    local title
+    title="${1}"
+    if [ "$title" == "-" ]; then
+        # read title from stdin. turn off error propogation to handle EOF as well as NL
+        set +e
+        read -r title
+        set -e
+    fi
 
+    local uuid
+    uuid=$("$GPG" -qd "$index" | jq -r ".[] | select(.overview.title==\"$title\").uuid")
     # Fetch the TOTP
     if [ $verbose -eq 1 ]; then
         echo "fetching TOTP for $uuid" 1>&2
