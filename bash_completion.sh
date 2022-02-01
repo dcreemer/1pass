@@ -37,7 +37,7 @@ function _fzf_complete_1pass() {
     COMPREPLY=()
     local search
     # The rest adapted from https://stackoverflow.com/a/1146716/190100
-    search=$(eval echo "$cword" 2>/dev/null || eval echo "$cword'" 2>/dev/null || eval echo "$cword\"" 2>/dev/null || "" )
+    search=$(eval echo "$cword" 2>/dev/null || eval echo "$cword'" 2>/dev/null || eval echo "$cword\"" 2>/dev/null || eval echo "" 2>/dev/null )
     local IFS=$'\n'
     while read -r line; do COMPREPLY+=("$line"); done < <(compgen -W "$(_1p_entries "${rcmd}")" -- "$search")
     local escaped_single_qoute="'\''"
