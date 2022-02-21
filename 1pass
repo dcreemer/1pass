@@ -175,7 +175,11 @@ sanity_check()
         programs+=(oathtool)
     fi
     if [ "$os" == "Linux" ] || [ "$os" == "FreeBSD" ]; then
-        programs+=(xclip)
+        if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
+            programs+=(wl-copy)
+        else
+            programs+=(xclip)
+        fi
     fi
 
     for cmd in "${programs[@]}"
@@ -500,7 +504,11 @@ output_result()
         local pbcopy
         pbcopy=pbcopy
         if [ "$os" == "Linux" ] || [ "$os" == "FreeBSD" ]; then
-            pbcopy="xclip -selection clipboard"
+            if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
+                pbcopy="wl-copy"
+            else
+                pbcopy="xclip -selection clipboard"
+            fi
         fi
         echo -n "${get_result}" | $pbcopy
         # sleep and reset clipboard
