@@ -42,7 +42,7 @@ function _fzf_complete_1pass() {
     while read -r line; do COMPREPLY+=("$line"); done < <(compgen -W "$(_1p_entries "${rcmd}")" -- "$search")
     local escaped_single_qoute="'\''"
     local i=0
-    for entry in ${COMPREPLY[*]}
+    for entry in "${COMPREPLY[@]}"
     do
         if [[ "${cword:0:1}" == "'" ]]
         then
@@ -74,5 +74,5 @@ function _should_1p_fzf_complete() {
 }
 
 function _1p_entries() {
-  eval "${@}" | sed -e "{" -e 's#\\#\\\\#g' -e "s#'#\\\'#g" -e 's#"#\\\"#g' -e "}"
+  eval "$*" | sed -e "{" -e 's#\\#\\\\#g' -e "s#'#\\\'#g" -e 's#"#\\\"#g' -e "}"
 }
