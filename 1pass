@@ -192,6 +192,12 @@ sanity_check()
             exit 1
         fi
     done
+
+    opversion=$(op --version)
+    if [ ${opversion:0:1} -gt 1 ]; then
+        echo "Only 1Password CLI version 1 is supported (found $opversion)" 1>&2
+        exit 1
+    fi
 }
 
 signin()
