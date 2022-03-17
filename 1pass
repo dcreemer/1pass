@@ -21,7 +21,7 @@
 set -e
 set -o pipefail
 
-VERSION="1.6"
+VERSION="1.6.1"
 
 if [ "$XDG_CONFIG_HOME" != "" ] && [ ! -d "${HOME}/.1pass" ]; then
     op_dir="${XDG_CONFIG_HOME}/1pass"
