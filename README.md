@@ -5,6 +5,11 @@ CLI](https://support.1password.com/command-line-getting-started/) `op`.
 
 ![Shellcheck](https://github.com/dcreemer/1pass/workflows/shellcheck/badge.svg)
 
+## WARNING 1password 2 CLI compatibility
+
+Do not upgrade to 1password CLI version 2! This `1pass` tool is not yet compatible with
+it.
+
 ## UPGRADE NOTE
 
 Upgrading to version 1.1 requires installation of the
