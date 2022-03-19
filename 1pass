@@ -419,6 +419,20 @@ get_110()
 }
 
 #
+# fetch a field from template 112 ("API Credential")
+#
+get_112()
+{
+  local uuid=$1
+  local field=${2/"DEFAULT"/"credential"}
+  local q=".details.sections[] | select(.fields).fields[] | select(.t==\"${field}\").v"
+
+  ensure_item "$uuid"
+
+  get_result=$(gpg -qd "${cache_dir}/${uuid}.gpg" | jq -r "${q}" || echo -n "_fail_")
+}
+
+#
 # fetch the list of fields from template 001 ("Login")
 #
 get_fields_001()
