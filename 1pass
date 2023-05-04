@@ -21,18 +21,22 @@
 set -e
 set -o pipefail
 
-VERSION="1.6.1"
+VERSION="1.6.2"
 
-if [ "$XDG_CONFIG_HOME" != "" ] && [ ! -d "${HOME}/.1pass" ]; then
-    op_dir="${XDG_CONFIG_HOME}/1pass"
+if [ "$OVERRIDE_1PASS_CONF_DIR" != "" ]; then
+  op_dir="${OVERRIDE_1PASS_CONF_DIR}"
+elif [ "$XDG_CONFIG_HOME" != "" ]; then
+  op_dir="${XDG_CONFIG_HOME}/1pass"
 else
-    op_dir=${HOME}/.1pass
+  op_dir="${HOME}/.config/1pass"
 fi
 
-if [ "$XDG_CACHE_HOME" != "" ] && [ ! -d "${op_dir}/cache" ]; then
-    cache_dir="${XDG_CACHE_HOME}/1pass"
+if [ "$OVERRIDE_1PASS_CACHE_DIR" != "" ]; then
+  cache_dir="${OVERRIDE_1PASS_CACHE_DIR}"
+elif [ "$XDG_CACHE_HOME" != "" ]; then
+  cache_dir="${XDG_CACHE_HOME}/1pass"
 else
-    cache_dir=${op_dir}/cache
+  cache_dir="${HOME}/.cache/1pass"
 fi
 
 os=$(uname)

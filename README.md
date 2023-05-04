@@ -130,7 +130,7 @@ any running gpg-agent of your GPG secret keys.
 In order to run with minimum user input, **1pass** relies on the Gnu Privacy Guard
 [gpg](https://gnupg.org/) to encrypt all locally stored data. 1Password needs both a *master
 password* and a *secret key* to access your vault. Each of these must be stored in an encrypted
-file (in ~/.1pass or `$XDG_CONFIG_HOME/1pass`) for 1pass to work correctly. 1pass encrypts these
+file (in `$OVERRIDE_1PASS_CONF_DIR` or `$XDG_CONFIG_HOME/1pass`) for 1pass to work correctly. 1pass encrypts these
 and all other files with your own gpg key. This key, as well as your 1Password login email and
 domain must be configured in the ~/.1pass/config file. The domain is the full domain name that you
 use to sign-in when you use the 1Password website, for example `example.1password.com` or
@@ -292,7 +292,7 @@ happen in their own window.
 ## Caching and Sessions
 
 When using **1pass**, all response data from 1Password is encrypted and then cached to
-```~/.1pass/cache```. Sometimes this cache will be out of date -- for example if you have created a
+```${XDG_CACHE_HOME}/1pass"``` (you can override this location with `$OVERRIDE_1PASS_CACHE_DIR`). Sometimes this cache will be out of date -- for example if you have created a
 new password entry via the 1Password application. Passing ```-r``` to **1pass** will force a refresh
 from the online 1Password vault.
 
