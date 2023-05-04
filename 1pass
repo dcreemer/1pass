@@ -58,7 +58,7 @@ fi
 
 # test setup:
 if [ ! -d "$op_dir" ] || [ ! -r "${op_dir}/config" ]; then
-    mkdir -p "$cache_dir"
+    mkdir -p "$op_dir"
     cat > "${op_dir}/config" <<CONFIG
 # configuration file for 1pass
 
