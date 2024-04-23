@@ -5,6 +5,11 @@ CLI](https://support.1password.com/command-line-getting-started/) `op`.
 
 ![Shellcheck](https://github.com/dcreemer/1pass/workflows/shellcheck/badge.svg)
 
+## NO LONGER MAINTAINED
+
+I am no longer maintaining this software, as the 1Password CLI version 2
+provides all of the features I need.
+
 ## WARNING 1password 2 CLI compatibility
 
 Do not upgrade to 1password CLI version 2! This `1pass` tool is not yet compatible with
@@ -80,13 +85,13 @@ curl https://raw.githubusercontent.com/dcreemer/1pass/master/bash_completion.sh 
 echo "source /usr/local/etc/1pass/bash_completion.sh" >> ~/.bash_profile
 ```
 
-By default the completion script will look for `fzf` completion support in your environment. If present, 
-it will use fzf completion ([see here](https://github.com/junegunn/fzf#fuzzy-completion-for-bash-and-zsh)). 
+By default the completion script will look for `fzf` completion support in your environment. If present,
+it will use fzf completion ([see here](https://github.com/junegunn/fzf#fuzzy-completion-for-bash-and-zsh)).
 
 _Note: If you have installed `fzf` using homebrew on macOS, make sure you have enabled completion by
 running `$(brew --prefix)/opt/fzf/install --completion` and follow the prompts._
 
-If you do not have fzf or if you turn this feature off it will revert to standard bash completion 
+If you do not have fzf or if you turn this feature off it will revert to standard bash completion
 behavior. If you would like to explicitly disable FZF completion for 1pass, you can do so as follows:
 
 ```sh
@@ -147,7 +152,7 @@ store your master password and secret key.
 ```sh
 $ ./1pass -rv
 please config 1pass by editing /home/me/.1pass/config
-$ vi ~/.1pass/config 
+$ vi ~/.1pass/config
 $ ./1pass -rv
 please put your master password into /home/me/.1pass/_master.gpg
 ex: echo "master-password" | gpg -er me@example.com > /home/me/.1pass/_master.gpg
