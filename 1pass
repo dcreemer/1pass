@@ -142,6 +142,7 @@ print_output=0
 clip_time=30
 OP_SESSION_NAME=$(echo "$domain" | cut -f1 -d'.' | tr '-' '_')
 list_fields=0
+OPBIN="op1"
 
 usage()
 {
@@ -169,7 +170,7 @@ USAGE
 
 sanity_check()
 {
-    programs=(op jq "$GPG" expect)
+    programs=($OPBIN jq "$GPG" expect)
 
     if [ "$use_totp" == "1" ]; then
         programs+=(oathtool)
@@ -193,7 +194,7 @@ sanity_check()
         fi
     done
 
-    opversion=$(op --version)
+    opversion=$("$OPBIN" --version)
     if [ "${opversion:0:1}" -gt 1 ]; then
         echo "Only 1Password CLI version 1 is supported (found $opversion)" 1>&2
         exit 1
@@ -217,7 +218,7 @@ signin()
     local script
     if [ "${use_totp}" == "0" ]; then
         script="
-            spawn op signin ${domain} ${email} ${se}
+            spawn ${OPBIN} signin ${domain} ${email} ${se}
             expect \"${domain}:\"
             send \"${pw}\n\"
             expect {
@@ -233,7 +234,7 @@ signin()
         "
     else
         local script="
-            spawn op signin ${domain} ${email} ${se}
+            spawn ${OPBIN} signin ${domain} ${email} ${se}
             expect \"${domain}:\"
             send \"${pw}\n\"
             expect {
@@ -297,7 +298,7 @@ fetch_index()
         echo "fetching index of all items" 1>&2
     fi
     local items
-    items=$(op list items --session="${token}" || echo -n "_fail_")
+    items=$("$OPBIN" list items --session="${token}" || echo -n "_fail_")
     if [ "$items" == "_fail_" ]; then
         echo "1pass: failed to fetch index of all items"
         exit 1
@@ -320,7 +321,7 @@ fetch_item()
         echo "fetching item $uuid" 1>&2
     fi
     local item
-    item=$(op get item "$uuid" --session="$token" || echo -n "_fail_")
+    item=$("$OPBIN" get item "$uuid" --session="$token" || echo -n "_fail_")
     if [ "$item" == "_fail_" ]; then
         echo "1pass: failed to fetch item $uuid"
         exit 1
@@ -401,7 +402,7 @@ get_003()
 
     ensure_item "$uuid"
 
-    get_result=$(gpg -qd "${cache_dir}/${uuid}.gpg" | jq -r "${q}" || echo -n "_fail_")
+    get_result=$("$GPG" -qd "${cache_dir}/${uuid}.gpg" | jq -r "${q}" || echo -n "_fail_")
 }
 
 #
@@ -415,7 +416,7 @@ get_110()
 
     ensure_item "$uuid"
 
-    get_result=$(gpg -qd "${cache_dir}/${uuid}.gpg" | jq -r "${q}" || echo -n "_fail_")
+    get_result=$("$GPG" -qd "${cache_dir}/${uuid}.gpg" | jq -r "${q}" || echo -n "_fail_")
 }
 
 #
@@ -491,7 +492,7 @@ get_totp()
         echo "fetching TOTP for $uuid" 1>&2
     fi
     local totp
-    totp=$(op get totp "$uuid" --session="$token" || echo -n "_fail_")
+    totp=$("$OPBIN" get totp "$uuid" --session="$token" || echo -n "_fail_")
     if [ "$item" == "_fail_" ]; then
         echo "1pass: failed to fetch TOTP for $uuid"
         exit 1
