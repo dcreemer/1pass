@@ -170,7 +170,7 @@ USAGE
 
 sanity_check()
 {
-    programs=($OPBIN jq "$GPG" expect)
+    programs=("$OPBIN" jq "$GPG" expect)
 
     if [ "$use_totp" == "1" ]; then
         programs+=(oathtool)
